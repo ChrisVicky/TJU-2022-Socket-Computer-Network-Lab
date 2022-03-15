@@ -24,7 +24,7 @@
 #define ECHO_PORT 9999
 #define BUF_SIZE 4096
 //#define BUF_SIZE 8192
-#define DEBUG
+//#define DEBUG
 int main(int argc, char* argv[])
 {
 	if (argc != 3 && argc != 4)
@@ -78,16 +78,16 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
 		LOG("Reading file: '%s'\n" ,argv[3]);
 #endif
-		read(fd_in, buf, BUF_SIZE);
+		read(fd_in, msg, BUF_SIZE);
 #ifdef DEBUG
-		LOG("File Contents: '%s'\n" ,buf);
+		LOG("File Contents: '%s'\n" ,msg);
 #endif
 	}else{
 		fgets(msg, BUF_SIZE, stdin);
 	}
 
 	int bytes_received;
-	fprintf(stdout, "Sending %s", msg);
+	fprintf(stdout, "Sending '%s'", msg);
 	send(sock, msg , strlen(msg), 0);
 #ifdef DEBUG
 	LOG("Contents Sent\n");

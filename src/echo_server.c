@@ -23,10 +23,10 @@
 
 #define ECHO_PORT 9999
 #define BUF_SIZE 4096
-#define DEBUG
+// #define DEBUG
 
 const char * _400msg = "HTTP/1.1 400 Bad request\r\n\r\n";
-const char * _501msg = "HTTP/1.1 400 Bad request\r\n\r\n";
+const char * _501msg = "HTTP/1.1 501 Not Implemented\r\n\r\n";
 
 int close_socket(int sock)
 {
@@ -119,7 +119,9 @@ int main(int argc, char* argv[])
 #endif
 				strcpy(buf, _501msg);
 			}
+#ifdef DEBUG
 			LOG("Msg to be sent: '%s'\n" ,buf);
+#endif
 			int len = strlen(buf);
 			if (send(client_sock, buf, strlen(buf), 0) != len)
 			{
@@ -130,7 +132,9 @@ int main(int argc, char* argv[])
 			}
 
 			memset(buf, 0, BUF_SIZE);
+#ifdef DEBUG
 			LOG("New buf: '%s'\n" ,buf);
+#endif
 		} 
 
 		if (readret == -1)
