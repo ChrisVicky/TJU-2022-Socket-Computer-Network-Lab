@@ -3,6 +3,8 @@
 #include <stdlib.h>
 
 #define SUCCESS 0
+#define _400 400
+
 
 //Header field
 typedef struct
