@@ -110,7 +110,7 @@ Request *parsing_request;
  * --
  */
 allowed_char_for_token:
-t_token_char; |
+		      t_token_char; |
 t_digit {
 	$$ = '0' + $1;
 }; |
@@ -120,7 +120,7 @@ t_dot;
  * Rule 2: A token is a sequence of all allowed token chars.
  */
 token:
-allowed_char_for_token {
+     allowed_char_for_token {
 	YPRINTF("token: Matched rule 1.\n");
 	snprintf($$, 8192, "%c", $1);
 }; |
@@ -153,7 +153,7 @@ token allowed_char_for_token {
  */
 
 allowed_char_for_text:
-allowed_char_for_token; |
+		     allowed_char_for_token; |
 t_separators {
 	$$ = $1;
 }; |
@@ -169,7 +169,7 @@ t_slash {
  * 	   also contains spaces.
  */
 text: allowed_char_for_text {
-	YPRINTF("text: Matched rule 1.\n");
+    YPRINTF("text: Matched rule 1.\n");
 	snprintf($$, 8192, "%c", $1);
 }; |
 text ows allowed_char_for_text {
@@ -185,7 +185,7 @@ text ows allowed_char_for_text {
  * Rule 5: Optional white spaces
  */
 ows: {
-	YPRINTF("OWS: Matched rule 1\n");
+   YPRINTF("OWS: Matched rule 1\n");
 	$$[0]=0;
 }; |
 t_sp {
@@ -197,18 +197,32 @@ t_ws {
 	snprintf($$, 8192, "%s", $1);
 };
 
+
+
+
+
 request_line: token t_sp text t_sp text t_crlf {
-	YPRINTF("request_Line:\n%s\n%s\n%s\n",$1, $3,$5);
+	    YPRINTF("request_Line:\n%s\n%s\n%s\n",$1, $3,$5);
     strcpy(parsing_request->http_method, $1);
 	strcpy(parsing_request->http_uri, $3);
 	strcpy(parsing_request->http_version, $5);
-}
+};
+
+request_line: token t_sp t_crlf text t_sp text t_crlf{
+	    YPRINTF("request_Line:\n%s\n%s\n%s\n",$1,$4,$6);
+	strcpy(parsing_request->http_method, $1);
+	strcpy(parsing_request->http_uri, $4);
+	strcpy(parsing_request->http_version, $6);
+	    };
 
 request_header: token ows t_colon ows text ows t_crlf {
-	YPRINTF("request_Header:\n%s\n%s\n",$1,$5);
+	      YPRINTF("request_Header:\n%s\n%s\n",$1,$5);
     strcpy(parsing_request->headers[parsing_request->header_count].header_name, $1);
 	strcpy(parsing_request->headers[parsing_request->header_count].header_value, $5);
 	parsing_request->header_count++;
+/* Dealing with longer header(longer than its previews value) */
+	parsing_request->headers = (Request_header *) realloc(parsing_request->headers, (1+(parsing_request->header_count)) * sizeof(Request_header));
+
 };
 
 
@@ -218,8 +232,11 @@ request_header: token ows t_colon ows text ows t_crlf {
  * All the best!
  *
  */
+
+request_header: request_header request_header ; /* Multiple headers may be included */
+
 request: request_line request_header t_crlf{
-	YPRINTF("parsing_request: Matched Success.\n");
+       YPRINTF("parsing_request: Matched Success.\n");
 	return SUCCESS;
 };
 

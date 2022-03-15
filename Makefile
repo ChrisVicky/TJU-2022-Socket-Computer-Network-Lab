@@ -20,6 +20,14 @@ all : example echo_server echo_client
 example: $(OBJ)
 	$(CC) $^ -o $@
 
+test_example: example
+	@for f in $(shell ls samples); do \
+		echo "=====Test file" $$f "========="; \
+		./example samples/$$f | grep Segmentation --color ; \
+		echo "---------------------------------------\n"; \
+	done	
+
+
 $(SRC_DIR)/lex.yy.c: $(SRC_DIR)/lexer.l
 	flex -o $@ $^
 
