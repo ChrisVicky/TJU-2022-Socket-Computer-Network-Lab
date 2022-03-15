@@ -22,6 +22,9 @@ all : example echo_server echo_client
 example: $(OBJ)
 	$(CC) $^ -o $@
 
+tarit:
+	tar -cvf webServerStartCodes-new.tar ./ 
+
 test_example: example
 	@for f in $(shell ls samples); do \
 		echo "=====Test file" $$f "========="; \
@@ -54,3 +57,4 @@ clean:
 	$(RM) $(OBJ) $(BIN) $(SRC_DIR)/lex.yy.c $(SRC_DIR)/y.tab.*
 	$(RM) -r $(OBJ_DIR)
 	$(RM) tags
+	$(RM) webServerStartCodes-new.tar
