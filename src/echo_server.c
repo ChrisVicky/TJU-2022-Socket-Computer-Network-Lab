@@ -23,6 +23,7 @@
 
 #define ECHO_PORT 9999
 #define BUF_SIZE 4096
+#define DEBUG
 
 const char * _400msg = "HTTP/1.1 400 Bad request\r\n\r\n";
 const char * _501msg = "HTTP/1.1 400 Bad request\r\n\r\n";
@@ -85,6 +86,9 @@ int main(int argc, char* argv[])
 	/* finally, loop waiting for input and then write it back */
 	while (1)
 	{
+#ifdef DEBUG
+		LOG("Start Listening at port %d\n" ,ECHO_PORT);
+#endif
 		cli_size = sizeof(cli_addr);
 		if ((client_sock = accept(sock, (struct sockaddr *) &cli_addr ,&cli_size)) == -1)
 		{
@@ -97,28 +101,35 @@ int main(int argc, char* argv[])
 
 		while((readret = recv(client_sock, buf, BUF_SIZE, 0)) >= 1)
 		{
-
+#ifdef DEBUG
 			LOG("Msg recieved: '%s'\n", buf);
+#endif
 			Request *request = parse(buf, BUF_SIZE, 8192);
 			
 			if(request==NULL)
 			{	
+#ifdef DEBUG
 				ERROR("Error parsing msg '%s'.\n" ,buf);
-				strncpy(buf, _400msg, sizeof(_400msg));
-				fprintf(stderr, "Error parsing msg '%s'.\n" ,buf);
+#endif
+				strcpy(buf, _400msg);
+			//	fprintf(stderr, "///Error parsing msg '%s'.\n" ,buf);
 			}else if(!check_method(request->http_method)){
+#ifdef DEBUG
 				ERROR("Error Method '%s' Not Supported\n",request->http_method);
-				strncpy(buf, _501msg, sizeof(_501msg));
+#endif
+				strcpy(buf, _501msg);
 			}
-
-			if (send(client_sock, buf, readret, 0) != readret)
+			LOG("Msg to be sent: '%s'\n" ,buf);
+			if (send(client_sock, buf, strlen(buf), 0) != readret)
 			{
 				close_socket(client_sock);
 				close_socket(sock);
 				fprintf(stderr, "Error sending to client.\n");
 				return EXIT_FAILURE;
 			}
+
 			memset(buf, 0, BUF_SIZE);
+			LOG("New buf: '%s'\n" ,buf);
 		} 
 
 		if (readret == -1)
