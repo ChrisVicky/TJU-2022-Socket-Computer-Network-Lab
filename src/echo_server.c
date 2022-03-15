@@ -120,7 +120,8 @@ int main(int argc, char* argv[])
 				strcpy(buf, _501msg);
 			}
 			LOG("Msg to be sent: '%s'\n" ,buf);
-			if (send(client_sock, buf, strlen(buf), 0) != readret)
+			int len = strlen(buf);
+			if (send(client_sock, buf, strlen(buf), 0) != len)
 			{
 				close_socket(client_sock);
 				close_socket(sock);
