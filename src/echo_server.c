@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
 			LOG("Msg recieved: '%s'\n", buf);
 #endif
+			/* parse requests */
 			Request *request = parse(buf, BUF_SIZE, 8192);
 			
 			if(request==NULL)
@@ -111,12 +112,14 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
 				ERROR("Error parsing msg '%s'.\n" ,buf);
 #endif
+				/* parse error, reqeust = NULL */
 				strcpy(buf, _400msg);
 			//	fprintf(stderr, "///Error parsing msg '%s'.\n" ,buf);
 			}else if(!check_method(request->http_method)){
 #ifdef DEBUG
 				ERROR("Error Method '%s' Not Supported\n",request->http_method);
 #endif
+				/* Method not supported */
 				strcpy(buf, _501msg);
 			}
 #ifdef DEBUG

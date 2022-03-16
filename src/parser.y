@@ -219,9 +219,8 @@ request_header: token ows t_colon ows text ows t_crlf {
 	      YPRINTF("request_Header:\n%s\n%s\n",$1,$5);
     strcpy(parsing_request->headers[parsing_request->header_count].header_name, $1);
 	strcpy(parsing_request->headers[parsing_request->header_count].header_value, $5);
-	parsing_request->header_count++;
 /* Dealing with longer header(longer than its previews value) */
-	parsing_request->headers = (Request_header *) realloc(parsing_request->headers, (1+(parsing_request->header_count)) * sizeof(Request_header));
+	parsing_request->headers = (Request_header *) realloc(parsing_request->headers, (1+(++parsing_request->header_count)) * sizeof(Request_header));
 
 };
 
