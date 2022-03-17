@@ -1,10 +1,10 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019/Debian) (preloaded format=xelatex 2021.11.29)  17 MAR 2022 13:21
+This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019/Debian) (preloaded format=xelatex 2021.11.29)  17 MAR 2022 13:59
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/home/christopher/Programme/LaTeX/WebLabReport/Thesis/tjumain
-(/home/christopher/Programme/LaTeX/WebLabReport/Thesis/tjumain.tex
+**/home/christopher/Programme/C/Web/webServerStartCodes-new/Report/tjumain
+(/home/christopher/Programme/C/Web/webServerStartCodes-new/Report/tjumain.tex
 LaTeX2e <2020-02-02> patch level 2
 L3 programming layer <2020-02-14> (/usr/share/texlive/texmf-dist/tex/latex/ctex/ctexbook.cls (/usr/share/texlive/texmf-dist/tex/latex/l3kernel/expl3.sty
 Package: expl3 2020-02-14 L3 programming layer (loader) 
@@ -1171,8 +1171,12 @@ File: figures/autolab_uploaded.png Graphic file (type bmp)
 ] [6]
 第四章
 
-Overfull \hbox (3.99971pt too wide) in paragraph at lines 4--16
-[][] 
+Overfull \hbox (10.99974pt too wide) in paragraph at lines 9--21
+ [][] 
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 36
  []
 
 )) [7
@@ -1187,7 +1191,7 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 71.
 Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 71.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 71.
 Package rerunfilecheck Info: File `tjumain.out' has not changed.
-(rerunfilecheck)             Checksum: 0E453C3CE89CE3C2BECC3D83598E4DE0;2136.
+(rerunfilecheck)             Checksum: 227C6C07CEE8268DB52EDDB0AEE6C779;2414.
 
 
 LaTeX Font Warning: Size substitutions with differences
@@ -1199,12 +1203,12 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 71.
  ) 
 Here is how much of TeX's memory you used:
- 23582 strings out of 481301
- 451417 string characters out of 5924271
- 935045 words of memory out of 5000000
- 40159 multiletter control sequences out of 15000+600000
+ 23586 strings out of 481301
+ 451491 string characters out of 5924271
+ 935436 words of memory out of 5000000
+ 40163 multiletter control sequences out of 15000+600000
  618351 words of font info for 242 fonts, out of 8000000 for 9000
  286 hyphenation exceptions out of 8191
- 59i,11n,81p,964b,1254s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 59i,11n,81p,975b,1254s stack positions out of 5000i,500n,10000p,200000b,80000s
 
 Output written on tjumain.pdf (9 pages).

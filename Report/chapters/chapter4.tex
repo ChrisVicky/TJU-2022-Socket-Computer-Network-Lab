@@ -1,19 +1,38 @@
-\chapter{进度总结}
+\chapter{进度总结及项目分工}
+
+\section{本周进度情况}
+
+本周主要完成了对 yacc 和 lex 文件的一定研究与实践，对消息 解析的原理进行了了解。同时，复习了 socket 编程的框架，实现了 socket 编程的实践部分。具体完成情况如表\ref{tab:renwu}所示。
 
 \begin{table}[htbp!]
-    \begin{tabular}{|l|l|l|l|}
+    \centering
+    \begin{tabular}{llll}
     \hline
-    本周任务要求                                        & 完成 & 没完成 & 备注 \\ \hline
-    1、阅读HTTP/1.1的标准文档RFC2616                      & \checkmark  &     &    \\ \hline
-    2、搭建编程环境                                      & \checkmark  &     &    \\ \hline
-    3、熟悉Socket编程方法                                & \checkmark  &     &    \\ \hline
-    4、掌握lex和yacc正确解析消息（message）的方法         & \checkmark  &     &    \\ \hline
-    5.1 实现简单的echo web server Echo GET, HEAD, POST & \checkmark  &     &    \\ \hline
-    5.2 响应没有实现的方法                                 & \checkmark  &     &    \\ \hline
-    5.3 响应错误的方法                                   & \checkmark  &     &    \\ \hline
-    6、功能测试                                        & \checkmark  &     &    \\ \hline
+    \multicolumn{1}{c}{本周任务要求}                                        & 完成 & 没完成 & 备注 \\ \hline 
+    1、阅读HTTP/1.1的标准文档RFC2616                      & \checkmark  &     &  无  \\ 
+    2、搭建编程环境                                      & \checkmark  &     &  无  \\
+    3、熟悉Socket编程方法                                & \checkmark  &     &  无  \\ 
+    4、掌握lex和yacc正确解析消息（message）的方法         & \checkmark  &     &  无  \\ 
+    5.1、实现简单的echo web server Echo GET, HEAD, POST & \checkmark  &     &  无  \\ 
+    5.2、响应没有实现的方法                                 & \checkmark  &     &   无 \\ 
+    5.3、响应错误的方法                                   & \checkmark  &     &  无  \\ 
+    6、功能测试                                        & \checkmark  &     & 无   \\ \hline
     \end{tabular}
-    \caption{本周进度完成表}
+    \caption{本周进度完成表}\label{tab:renwu}
     \end{table}
+
+\section{人员分工}
+
+人员分工如表\ref{tab:fengong}所示。
+
+\begin{longtable}{p{4em} p{14em}}
+    \hline
+    人员 & \multicolumn{1}{c}{项目分工} \\
+    \midrule
+        刘锦帆 & 完成消息解析及分发，整体项目的测试与 Debug。同时，完成实验报告相应部分的撰写 \\ \hline        李镇州 & 完成 echo\_server 返回消息的封装与实验报告的框架 \\ 
+        \hline
+    
+      \caption{人员分工表}  \label{tab:fengong}
+\end{longtable}
 
 

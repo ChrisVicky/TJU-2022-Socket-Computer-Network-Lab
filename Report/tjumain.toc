@@ -17,5 +17,7 @@
 \contentsline {section}{\numberline {3.2}实现简单的 echo web server}{5}{section*.17}%
 \contentsline {subsection}{\numberline {3.2.1}实验结果截图及分析}{5}{section*.18}%
 \contentsline {subsection}{\numberline {3.2.2}上交实验平台}{5}{section*.22}%
-\contentsline {chapter}{\numberline {第四章\hspace {.3em}}进度总结}{7}{section*.24}%
+\contentsline {chapter}{\numberline {第四章\hspace {.3em}}进度总结及项目分工}{7}{section*.24}%
+\contentsline {section}{\numberline {4.1}本周进度情况}{7}{section*.25}%
+\contentsline {section}{\numberline {4.2}人员分工}{7}{section*.27}%
 \contentsfinish 
