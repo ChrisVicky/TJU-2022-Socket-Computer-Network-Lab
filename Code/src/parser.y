@@ -208,13 +208,6 @@ request_line: token t_sp text t_sp text t_crlf {
 	strcpy(parsing_request->http_version, $5);
 };
 
-request_line_400: token t_sp t_crlf text t_sp text t_crlf{
-	    YPRINTF("request_Line:\n%s\n%s\n%s\n",$1,$4,$6);
-	strcpy(parsing_request->http_method, $1);
-	strcpy(parsing_request->http_uri, $4);
-	strcpy(parsing_request->http_version, $6);
-	    };
-
 request_header: token ows t_colon ows text ows t_crlf {
 	      YPRINTF("request_Header:\n%s\n%s\n",$1,$5);
     strcpy(parsing_request->headers[parsing_request->header_count].header_name, $1);
@@ -238,11 +231,6 @@ request: request_line request_header t_crlf{
        YPRINTF("parsing_request: Matched Success.\n");
 	return SUCCESS;
 };
-
-request: request_line_400 request_header t_crlf{
-	 YPRINTF("parsing_reqest: Matched, but 400, ERROR\n");
-	return _400;
-      }
 
 %%
 
