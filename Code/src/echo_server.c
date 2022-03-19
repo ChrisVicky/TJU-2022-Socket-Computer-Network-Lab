@@ -105,6 +105,7 @@ int main(int argc, char* argv[])
 			LOG("Msg recieved: '%s'\n", buf);
 #endif
 			/* parse requests */
+
 			Request *request = parse(buf, BUF_SIZE, 8192);
 			
 			if(request==NULL)

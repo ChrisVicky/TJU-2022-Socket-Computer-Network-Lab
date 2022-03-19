@@ -16,7 +16,7 @@
 
 
 /* Define LEXDEBUG to enable debug messages for this lex file */
-#define LEXDEBUG
+//#define LEXDEBUG
 #ifdef LEXDEBUG
 #include <stdio.h>
 #define LPRINTF(...) printf(__VA_ARGS__)
