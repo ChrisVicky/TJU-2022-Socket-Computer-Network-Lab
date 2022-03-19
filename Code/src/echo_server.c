@@ -22,11 +22,12 @@
 #include "util.h"
 
 #define ECHO_PORT 9999
-#define BUF_SIZE 4096
-// #define DEBUG
+#define BUF_SIZE 4096*5
+#define DEBUG
 
 const char * _400msg = "HTTP/1.1 400 Bad request\r\n\r\n";
 const char * _501msg = "HTTP/1.1 501 Not Implemented\r\n\r\n";
+const char * dest = "\r\n\r\n";
 
 int close_socket(int sock)
 {
@@ -45,7 +46,77 @@ int check_method(char *method)
 	if(!strcmp(method, "POST")) return 1;
 	return 0;
 }
+int print_request(Request * request){
+	PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	if(request==NULL){
+		ERROR("HTTP/1.1 400 Bad request\r\n\r\n");
+		return 1;
+	}
+	//Just printing everything
+	LOG("Http Method: '%s'\n",request->http_method);
+	LOG("Http Version: '%s'\n",request->http_version);
+	LOG("Http Uri:'%s'\n",request->http_uri);
+	int index = 0;
+	for(index = 0;index < request->header_count;index++){
+		LOG("Request Header\n");
+		LOG("Header name: '%s'; Header Value: '%s'\n",request->headers[index].header_name,request->headers[index].header_value);
+	}
+	return 0;
+}
+int deal_request(Request * request , int client_sock, int sock, char *buf){
+	if(request==NULL){	
+#ifdef DEBUG
+		ERROR("Error parsing msg '%s'.\n" ,buf);
+#endif
+		/* parse error, reqeust = NULL */
+		strcpy(buf, _400msg);
+	}else if(!check_method(request->http_method)){
+#ifdef DEBUG
+		ERROR("Error Method '%s' Not Supported\n",request->http_method);
+#endif
+		/* Method not supported */
+		strcpy(buf, _501msg);
+	}
+#ifdef DEBUG
+	print_request(request);
+	LOG("Msg.length to be sent: '%ld'\n" ,strlen(buf));
+#endif
+	int len = strlen(buf);
+	if (send(client_sock, buf, strlen(buf), 0) != len)
+	{
+		close_socket(client_sock);
+		close_socket(sock);
+		fprintf(stderr, "Error sending to client.\n");
+		return EXIT_FAILURE;
+	}
+	return EXIT_SUCCESS;
 
+}
+int deal_buf(char * buf, int readret, int client_sock, int sock, int fd_in){
+	char * t, *temp=buf;
+	while((t=strstr(temp,dest))!=NULL){
+		int len = t - temp;
+		char each[8192];
+		memset(each, 0, sizeof(each));
+		strncpy(each, temp, len);
+		strncat(each, dest, strlen(dest));
+		temp = t + strlen(dest);
+		unsigned int alen = strlen(each);
+#ifdef DEBUG
+		PRINT("strlen: --> %ld\n" ,alen);
+#endif
+		Request *request = parse(each, strlen(each), fd_in);
+		if(deal_request(request, client_sock, sock, each)){
+			ERROR("Dealing Request Error\n");
+			return EXIT_FAILURE;
+		}
+		if(request!=NULL){
+			free(request->headers);
+			free(request);
+		}
+	}
+	return EXIT_SUCCESS;
+}
 int main(int argc, char* argv[])
 {
 	int sock, client_sock;
@@ -102,43 +173,12 @@ int main(int argc, char* argv[])
 		while((readret = recv(client_sock, buf, BUF_SIZE, 0)) >= 1)
 		{
 #ifdef DEBUG
-			LOG("Msg recieved: '%s'\n", buf);
+			LOG("Msg recieved: '%ld'\n", strlen(buf));
 #endif
 			/* parse requests */
-
-			Request *request = parse(buf, BUF_SIZE, 8192);
-			
-			if(request==NULL)
-			{	
-#ifdef DEBUG
-				ERROR("Error parsing msg '%s'.\n" ,buf);
-#endif
-				/* parse error, reqeust = NULL */
-				strcpy(buf, _400msg);
-			//	fprintf(stderr, "///Error parsing msg '%s'.\n" ,buf);
-			}else if(!check_method(request->http_method)){
-#ifdef DEBUG
-				ERROR("Error Method '%s' Not Supported\n",request->http_method);
-#endif
-				/* Method not supported */
-				strcpy(buf, _501msg);
+			if(deal_buf(buf, readret, client_sock, sock, 8192)){
+				break;
 			}
-#ifdef DEBUG
-			LOG("Msg to be sent: '%s'\n" ,buf);
-#endif
-			int len = strlen(buf);
-			if (send(client_sock, buf, strlen(buf), 0) != len)
-			{
-				close_socket(client_sock);
-				close_socket(sock);
-				fprintf(stderr, "Error sending to client.\n");
-				return EXIT_FAILURE;
-			}
-
-			memset(buf, 0, BUF_SIZE);
-#ifdef DEBUG
-			LOG("New buf: '%s'\n" ,buf);
-#endif
 		} 
 
 		if (readret == -1)

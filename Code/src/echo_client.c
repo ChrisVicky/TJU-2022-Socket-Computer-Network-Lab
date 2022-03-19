@@ -22,9 +22,20 @@
 #include <netinet/ip.h>
 #include "util.h"
 #define ECHO_PORT 9999
-#define BUF_SIZE 4096
-//#define BUF_SIZE 8192
-//#define DEBUG
+//#define BUF_SIZE 4096
+#define BUF_SIZE 8192*5
+#define DEBUG
+const char dest[] = "\r\n\r\n";
+int tot_request(char * buf){
+	char * t, *temp=buf;
+	int tot = 0;
+	while((t=strstr(temp,dest))!=NULL){
+		tot ++;
+		int len = t - temp;
+		temp = t + strlen(dest);
+	}
+	return tot;
+}
 int main(int argc, char* argv[])
 {
 	if (argc != 3 && argc != 4)
@@ -32,8 +43,8 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "usage: %s <server-ip> <port> <file>",argv[0]);
 		return EXIT_FAILURE;
 	}
-	
-       	char buf[BUF_SIZE];
+
+	char buf[BUF_SIZE];
 
 	int status, sock;
 	struct addrinfo hints;
@@ -41,7 +52,7 @@ int main(int argc, char* argv[])
 	struct addrinfo *servinfo; //will point to the results
 	hints.ai_family = AF_INET;  //IPv4
 	hints.ai_socktype = SOCK_STREAM; //TCP stream sockets
-	hints.ai_flags = AI_PASSIVE; //fill in my IP for me
+	hints.ai_flags = AI_PASSIVE; //fill ,in my IP for me
 
 	if ((status = getaddrinfo(argv[1], argv[2], &hints, &servinfo)) != 0) 
 	{
@@ -63,7 +74,7 @@ int main(int argc, char* argv[])
 
 	char msg[BUF_SIZE]; 
 
-/* support reading from files */
+	/* support reading from files */
 	if(argc == 4){	
 #ifdef DEBUG
 		LOG("Open file: '%s' \n" ,argv[3]);
@@ -79,29 +90,29 @@ int main(int argc, char* argv[])
 		LOG("Reading file: '%s'\n" ,argv[3]);
 #endif
 		read(fd_in, msg, BUF_SIZE);
-#ifdef DEBUG
-		LOG("File Contents: '%s'\n" ,msg);
-#endif
 	}else{
 		fgets(msg, BUF_SIZE, stdin);
 	}
 
 	int bytes_received;
-	fprintf(stdout, "Sending '%s'", msg);
+	//fprintf(stdout, "Sending '%s'", msg);
 	send(sock, msg , strlen(msg), 0);
 #ifdef DEBUG
-	LOG("Contents Sent\n");
+	LOG("Contents Sent:%ld\n",strlen(msg));
 #endif
 	//memset(buf, 0, sizeof(buf));
-	if((bytes_received = recv(sock, buf, BUF_SIZE, 0)) > 1)
-	{
+	int num_of_request = tot_request(msg);
+	int i;
+	for(i=0;i<num_of_request;i++){
+		if((bytes_received = recv(sock, buf, BUF_SIZE, 0)) > 1)
+		{
+			PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 #ifdef DEBUG	
-		LOG("bytes_received: %d\n" ,bytes_received);
+			LOG("bytes_received: %d\n" ,bytes_received);
 #endif	
-		buf[bytes_received] = '\0';
-		fprintf(stdout, "Received %s", buf);
-	}        
-
+			buf[bytes_received] = '\0';
+		}        
+	}
 	freeaddrinfo(servinfo);
 	close(sock);    
 	return EXIT_SUCCESS;
