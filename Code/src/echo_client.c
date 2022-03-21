@@ -24,14 +24,13 @@
 #define ECHO_PORT 9999
 //#define BUF_SIZE 4096
 #define BUF_SIZE 8192*5
-#define DEBUG
+//#define DEBUG
 const char dest[] = "\r\n\r\n";
 int tot_request(char * buf){
 	char * t, *temp=buf;
 	int tot = 0;
 	while((t=strstr(temp,dest))!=NULL){
 		tot ++;
-		int len = t - temp;
 		temp = t + strlen(dest);
 	}
 	return tot;
@@ -95,7 +94,7 @@ int main(int argc, char* argv[])
 	}
 
 	int bytes_received;
-	//fprintf(stdout, "Sending '%s'", msg);
+	fprintf(stdout, "Sending '%s'", msg);
 	send(sock, msg , strlen(msg), 0);
 #ifdef DEBUG
 	LOG("Contents Sent:%ld\n",strlen(msg));
@@ -106,11 +105,12 @@ int main(int argc, char* argv[])
 	for(i=0;i<num_of_request;i++){
 		if((bytes_received = recv(sock, buf, BUF_SIZE, 0)) > 1)
 		{
+#ifdef DEBUG
 			PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-#ifdef DEBUG	
 			LOG("bytes_received: %d\n" ,bytes_received);
 #endif	
 			buf[bytes_received] = '\0';
+			fprintf(stdout, "Recieve '%s'\n" ,buf);
 		}        
 	}
 	freeaddrinfo(servinfo);

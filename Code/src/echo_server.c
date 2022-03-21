@@ -23,7 +23,7 @@
 
 #define ECHO_PORT 9999
 #define BUF_SIZE 4096*5
-#define DEBUG
+//#define DEBUG
 
 const char * _400msg = "HTTP/1.1 400 Bad request\r\n\r\n";
 const char * _501msg = "HTTP/1.1 501 Not Implemented\r\n\r\n";
@@ -68,7 +68,9 @@ int deal_request(Request * request , int client_sock, int sock, char *buf){
 #ifdef DEBUG
 		ERROR("Error parsing msg '%s'.\n" ,buf);
 #endif
+		PRINT("ERROR\n");
 		/* parse error, reqeust = NULL */
+		memset(buf, 0, sizeof(buf));
 		strcpy(buf, _400msg);
 	}else if(!check_method(request->http_method)){
 #ifdef DEBUG
@@ -79,7 +81,7 @@ int deal_request(Request * request , int client_sock, int sock, char *buf){
 	}
 #ifdef DEBUG
 	print_request(request);
-	LOG("Msg.length to be sent: '%ld'\n" ,strlen(buf));
+	LOG("Msg to be sent: '%s'\n" ,buf);
 #endif
 	int len = strlen(buf);
 	if (send(client_sock, buf, strlen(buf), 0) != len)
@@ -101,10 +103,6 @@ int deal_buf(char * buf, int readret, int client_sock, int sock, int fd_in){
 		strncpy(each, temp, len);
 		strncat(each, dest, strlen(dest));
 		temp = t + strlen(dest);
-		unsigned int alen = strlen(each);
-#ifdef DEBUG
-		PRINT("strlen: --> %ld\n" ,alen);
-#endif
 		Request *request = parse(each, strlen(each), fd_in);
 		if(deal_request(request, client_sock, sock, each)){
 			ERROR("Dealing Request Error\n");
