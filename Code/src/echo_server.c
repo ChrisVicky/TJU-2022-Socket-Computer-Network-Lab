@@ -20,14 +20,14 @@
 #include <unistd.h>
 #include "parse.h"
 #include "util.h"
+#include "buffer.h"
+#include "response.h"
 
 #define ECHO_PORT 9999
 #define BUF_SIZE 4096*5
 //#define DEBUG
 
-const char * _400msg = "HTTP/1.1 400 Bad request\r\n\r\n";
-const char * _501msg = "HTTP/1.1 501 Not Implemented\r\n\r\n";
-const char * dest = "\r\n\r\n";
+char * dest = "\r\n\r\n";
 
 int close_socket(int sock)
 {
@@ -39,13 +39,7 @@ int close_socket(int sock)
 	return 0;
 }
 
-int check_method(char *method)
-{
-	if(!strcmp(method, "GET")) return 1;
-	if(!strcmp(method, "HEAD")) return 1;
-	if(!strcmp(method, "POST")) return 1;
-	return 0;
-}
+
 int print_request(Request * request){
 	PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 	if(request==NULL){
@@ -63,58 +57,34 @@ int print_request(Request * request){
 	}
 	return 0;
 }
-int deal_request(Request * request , int client_sock, int sock, char *buf){
-	if(request==NULL){	
-#ifdef DEBUG
-		ERROR("Error parsing msg '%s'.\n" ,buf);
-#endif
-		PRINT("ERROR\n");
-		/* parse error, reqeust = NULL */
-		memset(buf, 0, sizeof(buf));
-		strcpy(buf, _400msg);
-	}else if(!check_method(request->http_method)){
-#ifdef DEBUG
-		ERROR("Error Method '%s' Not Supported\n",request->http_method);
-#endif
-		/* Method not supported */
-		strcpy(buf, _501msg);
-	}
-#ifdef DEBUG
-	print_request(request);
-	LOG("Msg to be sent: '%s'\n" ,buf);
-#endif
-	int len = strlen(buf);
-	if (send(client_sock, buf, strlen(buf), 0) != len)
-	{
-		close_socket(client_sock);
-		close_socket(sock);
-		fprintf(stderr, "Error sending to client.\n");
-		return EXIT_FAILURE;
-	}
-	return EXIT_SUCCESS;
 
-}
-int deal_buf(char * buf, int readret, int client_sock, int sock, int fd_in){
-	char * t, *temp=buf;
+int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, int fd_in){
+	char * t, *temp=dbuf->buf;
+	/* deal pipeline */
 	while((t=strstr(temp,dest))!=NULL){
 		int len = t - temp;
-		char each[8192];
-		memset(each, 0, sizeof(each));
-		strncpy(each, temp, len);
-		strncat(each, dest, strlen(dest));
+		dynamic_buffer * each = (dynamic_buffer *)malloc(sizeof(dynamic_buffer));
+		init_dynamic_buffer(each);
+		append_dynamic_buffer(each, temp, len);
+		append_dynamic_buffer(each, dest, strlen(dest));
 		temp = t + strlen(dest);
-		Request *request = parse(each, strlen(each), fd_in);
-		if(deal_request(request, client_sock, sock, each)){
-			ERROR("Dealing Request Error\n");
+
+		Return_value result = handle_request(client_sock, sock, each);	
+#ifdef DEBUG
+		LOG("msg to be sent '%s'\n" ,each->buf);
+#endif
+		if (send(client_sock, each->buf, each->current, 0) != each->current)
+		{
+			close_socket(client_sock);
+			close_socket(sock);
+			fprintf(stderr, "Error sending to client.\n");
 			return EXIT_FAILURE;
 		}
-		if(request!=NULL){
-			free(request->headers);
-			free(request);
-		}
+		if(result==CLOSE)
+			return CLOSE;
 	}
-	return EXIT_SUCCESS;
-}
+	return PERSISTENT;
+} 
 int main(int argc, char* argv[])
 {
 	int sock, client_sock;
@@ -167,14 +137,17 @@ int main(int argc, char* argv[])
 		}
 
 		readret = 0;
+		dynamic_buffer *dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
+		init_dynamic_buffer(dbuf);
 
 		while((readret = recv(client_sock, buf, BUF_SIZE, 0)) >= 1)
 		{
 #ifdef DEBUG
 			LOG("Msg recieved: '%ld'\n", strlen(buf));
 #endif
+			append_dynamic_buffer(dbuf, buf, readret);
 			/* parse requests */
-			if(deal_buf(buf, readret, client_sock, sock, 8192)){
+			if(deal_buf(dbuf, readret, client_sock, sock, 8192)!=PERSISTENT){
 				break;
 			}
 		} 

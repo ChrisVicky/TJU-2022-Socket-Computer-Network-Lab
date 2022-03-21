@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "parse.h"
 #include "util.h"
+#include "buffer.h"
 #define BUF_SIZE 8192
 //#define DEBUG
 
@@ -47,16 +48,17 @@ int deal_request(Request * request){
 int main(int argc, char **argv){
 	//Read from the file the sample
 	int fd_in = open(argv[1], O_RDONLY);
-	char buf[8192];
+	dynamic_buffer *d_buf = (dynamic_buffer*)malloc(sizeof(dynamic_buffer));;
+	init_dynamic_buffer(d_buf);
 	if(fd_in < 0) {
 		ERROR("Failed to open the file\n");
 		return 0;
 	}
-	read(fd_in,buf,8192);
+	read(fd_in,d_buf->buf,d_buf->capacity);
 	//Parse the buffer to the parse function. You will need to pass the socket fd and the buffer would need to
 	//be read from that fd
 
-	char * t, *temp=buf;
+	char * t, *temp=d_buf->buf;
 	while((t=strstr(temp,dest))!=NULL){
 		int len = t - temp;
 		char each[8192];

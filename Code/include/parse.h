@@ -1,3 +1,5 @@
+#ifndef PARSE_H
+#define PARSE_H
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,3 +32,4 @@ int yyparse();
 extern FILE * yyin;
 void yyrestart();
 void set_parsing_options(char *buf, size_t i, Request *request);
+#endif
