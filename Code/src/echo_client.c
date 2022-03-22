@@ -72,7 +72,6 @@ int handle_send(int sock, char *msg, int fd_in){
 		if((bytes_received = recv(sock, buf, BUF_SIZE, 0)) > 1)
 		{
 #ifdef DEBUG
-			PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 			LOG("bytes_received: %d\n" ,bytes_received);
 #endif	
 			buf[bytes_received] = '\0';

@@ -67,9 +67,8 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
 	// This should be modified if Get has other uri
 	char * html_path = "/home/christopher/Programme/C/Web/webServerStartCodes-new/Code/static_site/index.html";
-	
-	struct stat file_buffer;
-	if(stat(html_path, &file_buffer)){
+	/*char * html_path =*/ 
+	if(strcmp(request->http_uri, "/")){
 		// File not Found
 #ifdef DEBUG
 		ERROR("Path %s\n" ,html_path);
@@ -78,6 +77,8 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 		free_request(request);
 		return;
 	}
+	struct stat file_buffer;
+	stat(html_path, &file_buffer);
 #define BUF_SIZE 256
 	char time_buffer[BUF_SIZE]={0}; 
 		get_time(time_buffer, BUF_SIZE);
@@ -100,7 +101,7 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	if(return_value==CLOSE){
 		set_header(dbuf, "Connection", "Close");
 	}else{
-		set_header(dbuf, "Connection", "Keep-Alive");
+		set_header(dbuf, "Connection", "keep-alive");
 	}
 
 	// TODO: Open file and attach it to msg
@@ -111,7 +112,9 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 		handle_404(dbuf, cli_addr);
 		return ;
 	}
+	set_msg(dbuf, crlf);
 	set_msg(dbuf, file_content);
+	//set_msg(dbuf, crlf);
 	AccessLog("OK", cli_addr, "GET", 200);
 	return ;
 }
@@ -119,7 +122,7 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
 	// This should be modified if Get has other uri
 	char * html_path = "/home/christopher/Programme/C/Web/webServerStartCodes-new/Code/static_site/index.html";
-	
+//	char * html_path = request->http_uri;	
 	struct stat file_buffer;
 	if(stat(html_path, &file_buffer)){
 		handle_404(dbuf, cli_addr);
@@ -147,7 +150,7 @@ void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 	if(return_value==CLOSE){
 		set_header(dbuf, "Connection", "Close");
 	}else{
-		set_header(dbuf, "Connection", "Keep-Alive");
+		set_header(dbuf, "Connection", "keep-alive");
 	}
 	set_msg(dbuf, crlf);
 	AccessLog("OK", cli_addr, "HEAD", 200);

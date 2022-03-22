@@ -18,7 +18,7 @@
 #define LOG(format, ...) \
 	do{\
 	time_t now; time(&now); char *Time=ctime(&now); Time[strlen(Time)-1]='\0';\
-	printf("\33[1;36m[%s] [DEBUG LOG] " format "\33[0m",Time, ## __VA_ARGS__);}while(0)
+	printf("\33[1;35m[%s] [DEBUG LOG] " format "\33[0m",Time, ## __VA_ARGS__);}while(0)
 #define PRINT(format, ...) printf("\33[1;37m" format "\33[0m", ## __VA_ARGS__)
 
 
