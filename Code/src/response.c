@@ -18,7 +18,7 @@ char *colon = ":";
 
 
 
-int handle_request(int client_sock, int sock, dynamic_buffer *dbuf){
+int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	Request *request = parse(dbuf->buf, dbuf->current, client_sock);
 	
 	// 400 Error Parsing

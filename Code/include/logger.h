@@ -1,11 +1,13 @@
-/*
- * @Description    : For logging issues
- * @Auther         : Christopher Liu
- * @LastEditors    : Do note edit
- * @Date           : 2022-03-21 16:58:25
- * @LastEditTime   : 2022-03-21 17:21:16
- * Copyright 2022 Christopher Liu, All Rights Reserved. 
- */
+
+/*****************************************************************
+*   Copyright (C) 2022 TJU Liu Jinfan. All rights reserved.
+*   
+*   文件名称：response.c
+*   创 建 者：Christopher Liu  1051666563@qq.com
+*   创建日期：2022年03月21日
+*   描    述: Logger
+*
+*****************************************************************/
 
 #include<string.h>
 #include<stdio.h>
@@ -14,5 +16,7 @@
 #include<unistd.h>
 #include<pthread.h>
 
-void ErrorLog(char *msg);
+
+void ErrorLog(char *, char*, int);
+void AccessLog(char*,char*,int);
 

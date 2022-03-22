@@ -10,9 +10,11 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<arpa/inet.h>
 #include "buffer.h"
 #include "parse.h"
 #include "util.h"
+#include "logger.h"
 
 typedef enum Return_value{
 	ERROR,
@@ -32,7 +34,7 @@ typedef enum METHODS{
 	NOT_SUPPORTED
 }METHODS;
 
-int handle_request(int, int, dynamic_buffer*);
+int handle_request(int, int, dynamic_buffer*, struct sockaddr_in);
 
 void handle_get(Request*, dynamic_buffer*);
 void handle_head(Request*, dynamic_buffer*);

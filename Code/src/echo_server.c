@@ -18,6 +18,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 #include "parse.h"
 #include "util.h"
 #include "buffer.h"
@@ -25,7 +26,7 @@
 
 #define ECHO_PORT 9999
 #define BUF_SIZE 4096*5
-//#define DEBUG
+#define DEBUG
 
 char * dest = "\r\n\r\n";
 
@@ -58,7 +59,7 @@ int print_request(Request * request){
 	return 0;
 }
 
-int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, int fd_in){
+int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, int fd_in, struct sockaddr_in cli_addr){
 	char * t, *temp=dbuf->buf;
 	/* deal pipeline */
 	while((t=strstr(temp,dest))!=NULL){
@@ -69,7 +70,7 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, i
 		append_dynamic_buffer(each, dest, strlen(dest));
 		temp = t + strlen(dest);
 
-		Return_value result = handle_request(client_sock, sock, each);	
+		Return_value result = handle_request(client_sock, sock, each, cli_addr);	
 #ifdef DEBUG
 		LOG("msg to be sent '%s'\n" ,each->buf);
 #endif
@@ -90,7 +91,8 @@ int main(int argc, char* argv[])
 	int sock, client_sock;
 	ssize_t readret; /* int */
 	socklen_t cli_size; /* uint */
-	struct sockaddr_in addr, cli_addr;
+	struct sockaddr_in addr, cli_addr; 
+	/*unsigned short int, unsigned int*/
 	char buf[BUF_SIZE];
 
 	fprintf(stdout, "----- Echo Server -----\n");
@@ -143,11 +145,12 @@ int main(int argc, char* argv[])
 		while((readret = recv(client_sock, buf, BUF_SIZE, 0)) >= 1)
 		{
 #ifdef DEBUG
-			LOG("Msg recieved: '%ld'\n", strlen(buf));
+			LOG("Msg recieved: '%ld' from client : %s:%d\n", strlen(buf),inet_ntoa(cli_addr.sin_addr),(int) ntohs(cli_addr.sin_port));
 #endif
+
 			append_dynamic_buffer(dbuf, buf, readret);
 			/* parse requests */
-			if(deal_buf(dbuf, readret, client_sock, sock, 8192)!=PERSISTENT){
+			if(deal_buf(dbuf, readret, client_sock, sock, 8192, cli_addr)!=PERSISTENT){
 				break;
 			}
 		} 
