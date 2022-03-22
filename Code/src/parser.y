@@ -62,6 +62,8 @@ Request *parsing_request;
 %token t_backslash
 %token t_slash
 %token t_digit
+//%token t_digits /* Added myself */
+//%token texts	// Newly Added
 %token t_dot
 %token t_token_char
 %token t_lws
@@ -76,6 +78,8 @@ Request *parsing_request;
 %type<i> t_backslash
 %type<i> t_slash
 %type<i> t_digit
+//%type<i> t_digits // Newly Added
+//%type<i> texts		// Newly Added
 %type<i> t_dot
 %type<i> t_token_char
 %type<str> t_lws
@@ -197,9 +201,15 @@ t_ws {
 	snprintf($$, 8192, "%s", $1);
 };
 
-
-
-
+ 
+/*
+request_line_error_code: text t_sp t_digits t_sp texts{
+	YPRINTF("request_Line:\n%s\n%d\n%s",$1,$3,$5);
+	strcpy(parsing_request->http_version, $1);
+	strcpy(parsing_request->http_uri, $3);
+	strcpy(parsing_request->http_method, $5);
+};
+*/
 
 request_line: token t_sp text t_sp text t_crlf {
 	    YPRINTF("request_Line:\n%s\n%s\n%s\n",$1, $3,$5);
@@ -231,6 +241,13 @@ request: request_line request_header t_crlf{
        YPRINTF("parsing_request: Matched Success.\n");
 	return SUCCESS;
 };
+
+/*
+error_request: request_line_error_code request_header t_crlf{
+	YPRINTF("parsing_request: Matched Success. But Error Occoured\n");
+	return SUCCESS;
+};
+*/
 
 %%
 

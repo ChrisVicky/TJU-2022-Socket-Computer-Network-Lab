@@ -10,7 +10,10 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<fcntl.h>
 #include<arpa/inet.h>
+#include<unistd.h>
+#include<sys/stat.h>
 #include "buffer.h"
 #include "parse.h"
 #include "util.h"
@@ -35,15 +38,16 @@ typedef enum METHODS{
 }METHODS;
 
 int handle_request(int, int, dynamic_buffer*, struct sockaddr_in);
+void helper_head(Request*, dynamic_buffer*, struct sockaddr_in);
 
-void handle_get(Request*, dynamic_buffer*);
-void handle_head(Request*, dynamic_buffer*);
-void handle_post(Request*, dynamic_buffer*);
+void handle_get(Request*, dynamic_buffer*, struct sockaddr_in, int);
+void handle_head(Request*, dynamic_buffer*, struct sockaddr_in, int);
+void handle_post(Request*, dynamic_buffer*, struct sockaddr_in, int);
 
-void handle_400(dynamic_buffer*);
-void handle_404(dynamic_buffer*);
-void handle_501(dynamic_buffer*);
-void handle_505(dynamic_buffer*);
+void handle_400(dynamic_buffer*, struct sockaddr_in);
+void handle_404(dynamic_buffer*, struct sockaddr_in);
+void handle_501(dynamic_buffer*, struct sockaddr_in);
+void handle_505(dynamic_buffer*, struct sockaddr_in);
 
 METHODS method_switch(char *);
 
@@ -54,4 +58,8 @@ void free_request(Request*);
 void set_response(dynamic_buffer*, char*, char*);
 void set_header(dynamic_buffer*, char*, char*);
 void set_msg(dynamic_buffer*, char*);
+
+void get_time(char*,size_t);
+void get_last_modified(struct stat, char*, size_t);
+void get_file_content(char*, char*, int);
 

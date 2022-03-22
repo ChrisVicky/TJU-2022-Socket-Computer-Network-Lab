@@ -19,6 +19,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <time.h>
 #include "parse.h"
 #include "util.h"
 #include "buffer.h"
@@ -145,7 +146,7 @@ int main(int argc, char* argv[])
 		while((readret = recv(client_sock, buf, BUF_SIZE, 0)) >= 1)
 		{
 #ifdef DEBUG
-			LOG("Msg recieved: '%ld' from client : %s:%d\n", strlen(buf),inet_ntoa(cli_addr.sin_addr),(int) ntohs(cli_addr.sin_port));
+			LOG("Msg recieved: '%ld' from client : %s:%d\n", strlen(buf),inet_ntoa(cli_addr.sin_addr),(int) ntohs(cli_addr.sin_port) );
 #endif
 
 			append_dynamic_buffer(dbuf, buf, readret);

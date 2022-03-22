@@ -15,8 +15,9 @@
 #include<time.h>
 #include<unistd.h>
 #include<pthread.h>
+#include<arpa/inet.h>
+#include"util.h"
 
-
-void ErrorLog(char *, char*, int);
-void AccessLog(char*,char*,int);
+void ErrorLog(char *, struct sockaddr_in);
+void AccessLog(char*,struct sockaddr_in,char*, int);
 

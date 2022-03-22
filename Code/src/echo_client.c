@@ -20,6 +20,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <time.h>
 #include "parse.h"
 #include "util.h"
 #define ECHO_PORT 9999

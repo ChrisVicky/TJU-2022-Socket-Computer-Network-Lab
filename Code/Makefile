@@ -5,7 +5,7 @@ SRC := $(wildcard $(SRC_DIR)/*.c)
 # all objects
 OBJ := $(OBJ_DIR)/y.tab.o $(OBJ_DIR)/lex.yy.o $(OBJ_DIR)/parse.o $(OBJ_DIR)/buffer.o $(OBJ_DIR)/response.o $(OBJ_DIR)/example.o $(OBJ_DIR)/logger.o
 # all yacc, lex and parse objects
-YLOOBJ := $(OBJ_DIR)/y.tab.o $(OBJ_DIR)/lex.yy.o $(OBJ_DIR)/parse.o $(OBJ_DIR)/buffer.o $(OBJ_DIR)/response.o 
+YLOOBJ := $(OBJ_DIR)/y.tab.o $(OBJ_DIR)/lex.yy.o $(OBJ_DIR)/parse.o $(OBJ_DIR)/buffer.o $(OBJ_DIR)/logger.o  $(OBJ_DIR)/response.o 
 # all binaries
 BIN := example echo_server echo_client
 # C compiler
@@ -51,9 +51,6 @@ echo_server: $(YLOOBJ) $(OBJ_DIR)/echo_server.o
 	$(CC) -Werror $^ -o $@
 
 echo_client: $(YLOOBJ) $(OBJ_DIR)/echo_client.o
-	$(CC) -Werror $^ -o $@
-
-logger: $(OBJ_DIR)/logger.o
 	$(CC) -Werror $^ -o $@
 
 $(OBJ_DIR):

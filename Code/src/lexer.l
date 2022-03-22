@@ -85,6 +85,12 @@ extern int parsing_offset;	/* Current offset in the buffer */
 /* Matches a digit. For e.g., 0, 8. */
 digit		[0-9]
 
+/* Matches number */
+/* digits		^[1-9]\d*$ */
+
+/* Matches Texts */
+/* texts		[^\n\r] */
+
 /* Matches a CRLF. Carriage return - linefeed sequence */
 crlf            \x0d\x0a
 

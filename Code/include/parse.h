@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "util.h"
+#include <time.h>
 
 #define SUCCESS 0
 #define _400 400
