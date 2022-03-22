@@ -58,10 +58,11 @@ Request * parse(char *buffer, int size, int socketFd) {
 		set_parsing_options(buf, i, request);
 		if (yyparse() == SUCCESS) {
 			return request;
-		}else{
+		}
+		/*else{
 			yyrestart(yyin); // 输入文件重置
 			
-		}
+		}*/
 	}
 	//TODO Handle Malformed Requests
 	printf("Parsing Failed\n");

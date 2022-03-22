@@ -65,12 +65,16 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, i
 	/* deal pipeline */
 	while((t=strstr(temp,dest))!=NULL){
 		int len = t - temp;
+
 		dynamic_buffer * each = (dynamic_buffer *)malloc(sizeof(dynamic_buffer));
 		init_dynamic_buffer(each);
+		memset_dynamic_buffer(each);
 		append_dynamic_buffer(each, temp, len);
 		append_dynamic_buffer(each, dest, strlen(dest));
 		temp = t + strlen(dest);
-
+#ifdef DEBUG
+		LOG("Starting dealing with msg: [%s]\n" ,each->buf);
+#endif
 		Return_value result = handle_request(client_sock, sock, each, cli_addr);	
 #ifdef DEBUG
 		LOG("msg to be sent '%s'\n" ,each->buf);
@@ -148,12 +152,13 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
 			LOG("Msg recieved: '%ld' from client : %s:%d\n", strlen(buf),inet_ntoa(cli_addr.sin_addr),(int) ntohs(cli_addr.sin_port) );
 #endif
-
+			memset_dynamic_buffer(dbuf);
 			append_dynamic_buffer(dbuf, buf, readret);
 			/* parse requests */
 			if(deal_buf(dbuf, readret, client_sock, sock, 8192, cli_addr)!=PERSISTENT){
 				break;
 			}
+			memset(buf, 0, sizeof(buf));
 		} 
 
 		if (readret == -1)

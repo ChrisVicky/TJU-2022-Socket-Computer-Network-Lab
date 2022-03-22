@@ -25,8 +25,8 @@
 #include "util.h"
 #define ECHO_PORT 9999
 //#define BUF_SIZE 4096
-#define BUF_SIZE 8192*5
-//#define DEBUG
+#define BUF_SIZE 4096
+#define DEBUG
 const char dest[] = "\r\n\r\n";
 const char header_name_connection[] = "Connection";
 const char header_value_close[] = "close";
@@ -77,10 +77,12 @@ int handle_send(int sock, char *msg, int fd_in){
 #endif	
 			buf[bytes_received] = '\0';
 			fprintf(stdout, "Recieve '%s'\n" ,buf);
-			Request *request = parse(buf, strlen(buf), fd_in);
+		/* 	Request *request = parse(buf, strlen(buf), fd_in);
 			if(handle_request_client(request)==CONNECTION_CLOSE){
 				return CONNECTION_CLOSE;
 			}
+		*/
+			memset(buf, 0, sizeof(buf));
 		}        
 	}
 	return CONNECTION_PERSIST;
@@ -124,9 +126,9 @@ int main(int argc, char* argv[])
 		int agc=3;
 		for(agc=3;agc<argc;agc++){
 #ifdef DEBUG
-			LOG("Open file: '%s' \n" ,argv[3]);
+			LOG("Open file: '%s' \n" ,argv[agc]);
 #endif
-			int fd_in = open(argv[3], O_RDONLY);
+			int fd_in = open(argv[agc], O_RDONLY);
 			if(fd_in<0){
 				close(sock);
 				freeaddrinfo(servinfo);
@@ -134,7 +136,7 @@ int main(int argc, char* argv[])
 				return EXIT_FAILURE;
 			}
 #ifdef DEBUG
-			LOG("Reading file: '%s'\n" ,argv[3]);
+			LOG("Reading file: '%s'\n" ,argv[agc]);
 #endif
 			if(read(fd_in, msg, BUF_SIZE)<1){
 				ERROR("Failed to read the file\n");

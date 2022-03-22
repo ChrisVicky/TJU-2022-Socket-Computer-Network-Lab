@@ -32,11 +32,9 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 
 	// check connection:close
 	Return_value return_value = PERSISTENT;
-	Connection_status connection_status = KeepAlive;
 	char *connection_value = get_header_value(request, "Connection");
 	if(!strcmp(connection_value, "Close")){
 		return_value = CLOSE;
-		connection_status = Close;
 	}
 
 	// 505 Http version not supported
