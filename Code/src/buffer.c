@@ -66,7 +66,7 @@ void print_dynamic_buffer(dynamic_buffer *db){
 		ERROR("DB->BUF NULL\n");
 		return ;
 	}
-	LOG("PRINT Dynamic Buffer %d\n%s" ,db->current,db->buf);
+	LOG("PRINT Dynamic Buffer %ld\n%s" ,db->current,db->buf);
 }
 
 void reset_dynamic_buffer(dynamic_buffer *db){

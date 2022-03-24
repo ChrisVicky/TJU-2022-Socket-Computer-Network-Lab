@@ -4,7 +4,7 @@
 *   文件名称：response.h
 *   创 建 者：Christopher Liu  1051666563@qq.com
 *   创建日期：2022年03月21日
-*   描    述：
+*   描    述：Response.h and Response.c Both deal with Request Recieved. 
 *
 *****************************************************************/
 #include<stdio.h>
@@ -47,7 +47,6 @@ typedef enum TYPE{
 	GIF,
 	NONE
 }TYPE;
-
 
 int handle_request(int, int, dynamic_buffer*, struct sockaddr_in);
 void helper_head(Request*, dynamic_buffer*, struct sockaddr_in);

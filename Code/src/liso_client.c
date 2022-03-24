@@ -25,7 +25,7 @@
 #include "util.h"
 #define ECHO_PORT 9999
 //#define BUF_SIZE 4096
-#define BUF_SIZE 4096
+#define BUF_SIZE (4096*10)
 #define DEBUG
 const char dest[] = "\r\n\r\n";
 const char header_name_connection[] = "Connection";
@@ -68,6 +68,12 @@ int handle_send(int sock, char *msg, int fd_in){
 	//memset(buf, 0, sizeof(buf));
 	int num_of_request = tot_request(msg);
 	int i;
+#ifdef DEBUG
+	LOG("Total Requests: --> %d\n" ,num_of_request);
+#endif
+	// Debug --> We send and recieve one at a time.
+	// Even though when we deal with a pipeline
+	num_of_request = 1; 
 	for(i=0;i<num_of_request;i++){
 		if((bytes_received = recv(sock, buf, BUF_SIZE, 0)) > 1)
 		{
@@ -76,6 +82,7 @@ int handle_send(int sock, char *msg, int fd_in){
 #endif	
 			buf[bytes_received] = '\0';
 			fprintf(stdout, "========== Recieve ==========\n%s\n" ,buf);
+			PRINT("%d/%d\n" ,i,num_of_request);
 		/* 	Request *request = parse(buf, strlen(buf), fd_in);
 			if(handle_request_client(request)==CONNECTION_CLOSE){
 				return CONNECTION_CLOSE;

@@ -20,14 +20,23 @@ char *colon = ":";
 char *server_info = "liso/1.0";
 char *default_path = "./static_site";
 
-
+/**
+ * @brief Handle Requests mainly set 
+ *
+ * @param client_sock
+ * @param sock
+ * @param dbuf
+ * @param cli_addr
+ *
+ * @return 
+ */
 int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	Request *request = parse(dbuf->buf, dbuf->current, client_sock);
 
 	// 400 Error Parsing
 	if(request == NULL){
 		handle_400(dbuf, cli_addr);
-		return CLOSE;
+		return PERSISTENT;
 	}
 
 	// check connection:close
@@ -41,7 +50,10 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 	if(strcmp(my_http_version, request->http_version)){
 		handle_505(dbuf, cli_addr);
 		free_request(request);
-		return CLOSE;
+	
+		//	return CLOSE;
+		//	No need to worry ,because we do not strictly follow RFC2616
+		return PERSISTENT;
 	}
 
 	// Methods, 501 Method not supported.
@@ -58,9 +70,9 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 		default:
 			handle_501(dbuf, cli_addr);
 			free_request(request);
-			return CLOSE;
+			return PERSISTENT;
 	}
-	return return_value;
+	return PERSISTENT;
 } 
 
 // Handler --> Get, Post, Head
@@ -120,7 +132,7 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 		return ;
 	}
 #ifdef DEBUG
-	print_dynamic_buffer(dfbuf);
+	//print_dynamic_buffer(dfbuf);
 #endif
 	set_msg(dbuf, dfbuf->buf, dfbuf->current);
 	//set_msg(dbuf, crlf);

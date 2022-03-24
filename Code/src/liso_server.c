@@ -26,7 +26,7 @@
 #include "response.h"
 
 #define ECHO_PORT 9999
-#define BUF_SIZE 4096*5
+#define BUF_SIZE (4096*10)
 #define DEBUG
 
 char * dest = "\r\n\r\n";
@@ -62,10 +62,15 @@ int print_request(Request * request){
 
 int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, int fd_in, struct sockaddr_in cli_addr){
 	char * t, *temp=dbuf->buf;
+	int cnt = 0;
 	/* deal pipeline */
+	dynamic_buffer *return_buffer = (dynamic_buffer*) malloc(sizeof(dynamic_buffer));
+	init_dynamic_buffer(return_buffer);
 	while((t=strstr(temp,dest))!=NULL){
 		int len = t - temp;
-
+#ifdef DEBUG
+		PRINT("============================CURRENT CNT: %d=========================\n",cnt++);
+#endif
 		dynamic_buffer * each = (dynamic_buffer *)malloc(sizeof(dynamic_buffer));
 		init_dynamic_buffer(each);
 		memset_dynamic_buffer(each);
@@ -73,25 +78,28 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, i
 		append_dynamic_buffer(each, dest, strlen(dest));
 		temp = t + strlen(dest);
 #ifdef DEBUG
-		LOG("Starting dealing with msg\n----------\n%s---------\n" ,each->buf);
+		LOG("Starting dealing with msg\n----------\n%ld\n---------\n" ,each->current);
 #endif
 		Return_value result = handle_request(client_sock, sock, each, cli_addr);	
+		append_dynamic_buffer(return_buffer, each->buf, each->current);
 #ifdef DEBUG
-		LOG("msg to be sent\n========== Sending ==========\n%s\n" ,each->buf);
-#endif
-		if (send(client_sock, each->buf, each->current, 0) != each->current)
-		{
-			close_socket(client_sock);
-			close_socket(sock);
-			fprintf(stderr, "Error sending to client.\n");
-			return EXIT_FAILURE;
-		}
-#ifdef DEBUG
-		LOG("MSG Sent\n");
+		LOG("MSG Appended\n");
 #endif
 		if(result==CLOSE)
 			return CLOSE;
+		free_dynamic_buffer(each);
 	}
+#ifdef DEBUG
+	LOG("msg to be sent\n======================= Sending ======================\n%ld\n" ,return_buffer->current);
+#endif
+	if (send(client_sock, return_buffer->buf, return_buffer->current, 0) != return_buffer->current)
+	{
+		close_socket(client_sock);
+		close_socket(sock);
+		fprintf(stderr, "Error sending to client.\n");
+		return EXIT_FAILURE;
+	}
+
 #ifdef DEBUG
 	LOG("End with this buf, go back persistently\n");
 #endif
