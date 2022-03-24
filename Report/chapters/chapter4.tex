@@ -2,21 +2,19 @@
 
 \section{本周进度情况}
 
-本周主要完成了对 yacc 和 lex 文件的一定研究与实践，对消息 解析的原理进行了了解。同时，复习了 socket 编程的框架，实现了 socket 编程的实践部分。具体完成情况如表\ref{tab:renwu}所示。
+本周主要完成了对 GET，HEAD，POST 以及出错情况的解析、分类和针对性返回。同时，通过 dynamic\_buffer 对缓冲区以及发出、接收的报文进行封装，缓解了一部分可能出现的缓冲区溢出问题。在读写磁盘时，通过 stat 等函数进行预处理，避免了 segment fault 的发生。最后，创建了 logger.c 为格式化输出日志提供了接口。任务完成情况如表\ref{tab:renwu}所示。
 
 \begin{table}[htbp!]
     \centering
-    \begin{tabular}{llll}
-    \hline
-    \multicolumn{1}{c}{本周任务要求}                                        & 完成 & 没完成 & 备注 \\ \hline 
-    1、阅读HTTP/1.1的标准文档RFC2616                      & \checkmark  &     &  无  \\ 
-    2、搭建编程环境                                      & \checkmark  &     &  无  \\
-    3、熟悉Socket编程方法                                & \checkmark  &     &  无  \\ 
-    4、掌握lex和yacc正确解析消息（message）的方法         & \checkmark  &     &  无  \\ 
-    5.1、实现简单的echo web server Echo GET, HEAD, POST & \checkmark  &     &  无  \\ 
-    5.2、响应没有实现的方法                                 & \checkmark  &     &   无 \\ 
-    5.3、响应错误的方法                                   & \checkmark  &     &  无  \\ 
-    6、功能测试                                        & \checkmark  &     & 无   \\ \hline
+    \begin{tabular}{p{14pt}p{250pt}p{30pt}p{30pt}}
+    \hline\centering
+    & \multicolumn{1}{c}{本周任务要求}                                        & 完成 &  备注 \\ \hline 
+    1 & 完善服务器功能，能按照 RFC 2616 实现 HEAD、GET 和 POST 的持久连接                      & \checkmark    &  无  \\ 
+    1.1 & 按照 RFC2616 响应 GET, HEAD 和 POST 方法         & \checkmark      &  无  \\ 
+    1.2 & 支持 4 种 HTTP 1.1 出错代码：400, 404，501，505 & \checkmark      &  无  \\ 
+    1.3 & 妥善管理接收缓冲区，避免由于客户端请求消息太常导致的缓冲区溢出问题                                 & \checkmark      &   无 \\ 
+    2 & 服务器能处理读写磁盘文件时遇到的错误                                      & \checkmark      &  无  \\
+    3 & 创建简化的日志记录模块，记录格式化日志                                & \checkmark     &  无  \\  \hline
     \end{tabular}
     \caption{本周进度完成表}\label{tab:renwu}
     \end{table}
@@ -29,7 +27,7 @@
     \hline
     人员 & \multicolumn{1}{c}{项目分工} \\
     \midrule
-        刘锦帆 & 完成消息解析及分发，整体项目的测试与 Debug。同时，完成实验报告相应部分的撰写 \\ \hline        李镇州 & 完成 echo\_server 返回消息的封装与实验报告的框架 \\ 
+        刘锦帆 & 完成大部分代码工作，以及协议实现部分 \\ \hline        李镇州 & 完成 client 端的处理以及协议设计部分的写作 \\ 
         \hline
     
       \caption{人员分工表}  \label{tab:fengong}
