@@ -21,14 +21,17 @@ char *server_info = "liso/1.0";
 char *default_path = "./static_site";
 
 /**
- * @brief Handle Requests mainly set 
+ * @brief 
+ * 	--> Handle Requests 
  *
- * @param client_sock
- * @param sock
- * @param dbuf
- * @param cli_addr
+ * @param client_sock	: client's socket
+ * @param sock		: server's socket
+ * @param dbuf		: buffer for sending msgs
+ * @param cli_addr	: client's address
  *
  * @return 
+ * 	-->	PERSISTENT	: ..
+ * 	--> 	CLOSE		: Not important
  */
 int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	Request *request = parse(dbuf->buf, dbuf->current, client_sock);
@@ -75,6 +78,14 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 	return PERSISTENT;
 } 
 
+/**
+ * @brief 	: handle get requests
+ *
+ * @param request		: requests details
+ * @param dbuf			: buffer for returned msgs
+ * @param cli_addr		: client's address
+ * @param return_value		: returned value
+ */
 // Handler --> Get, Post, Head
 void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
 	dynamic_buffer *uri_dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
@@ -140,6 +151,14 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	return ;
 }
  
+/**
+ * @brief 		: Handle Head requests
+ *
+ * @param request	: For requests details
+ * @param dbuf		: For containing return msg
+ * @param cli_addr	: Client's address
+ * @param return_value	: NOT IMPORTANT
+ */
 void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
 	// This should be modified if Get has other uri
 	dynamic_buffer *uri_dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
@@ -347,6 +366,16 @@ TYPE get_TYPE(char *extension){
 	}
 }
 
+/**
+ * @brief 		: Read from files 
+ *
+ * @param dfbuf		: For Containing Contents
+ * @param path		: Path to the File
+ *
+ * @return 
+ * 	--> 		0 : Success
+ * 	-->		1 : Failed
+ */
 // Get File 
 // TODO: Add BUF_SIZE
 int get_file_content(dynamic_buffer * dfbuf, char*path){

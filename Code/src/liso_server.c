@@ -42,24 +42,21 @@ int close_socket(int sock)
 }
 
 
-int print_request(Request * request){
-	PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	if(request==NULL){
-		ERROR("HTTP/1.1 400 Bad request\r\n\r\n");
-		return 1;
-	}
-	//Just printing everything
-	LOG("Http Method: '%s'\n",request->http_method);
-	LOG("Http Version: '%s'\n",request->http_version);
-	LOG("Http Uri:'%s'\n",request->http_uri);
-	int index = 0;
-	for(index = 0;index < request->header_count;index++){
-		LOG("Request Header\n");
-		LOG("Header name: '%s'; Header Value: '%s'\n",request->headers[index].header_name,request->headers[index].header_value);
-	}
-	return 0;
-}
-
+/**
+ * @brief 	Deal with buffer --> which contains (multiple) requests 
+ * 		if it's a pipeline request
+ * @param dbuf 		--> 	dynamic_buffer, requests
+ * @param readret	-->	size of buffer
+ * @param client_sock	-->	client's sock
+ * @param sock		-->	server's sock
+ * @param fd_in		-->	No meaning here
+ * @param cli_addr	-->	client's address
+ *
+ * @return 
+ * 	-->	PERSISTENT	: Go on waiting for msg
+ * 	-->	EXIT_FAILURE	: End this connection
+ * 	-->	CLOSE		: Close current connection ( Which can be ignored in our lab )
+ */
 int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, int fd_in, struct sockaddr_in cli_addr){
 	char * t, *temp=dbuf->buf;
 	int cnt = 0;
@@ -89,9 +86,11 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, i
 			return CLOSE;
 		free_dynamic_buffer(each);
 	}
+
 #ifdef DEBUG
 	LOG("msg to be sent\n======================= Sending ======================\n%ld\n" ,return_buffer->current);
 #endif
+
 	if (send(client_sock, return_buffer->buf, return_buffer->current, 0) != return_buffer->current)
 	{
 		close_socket(client_sock);
@@ -166,7 +165,7 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
 			LOG("Msg recieved: '%ld' from client : %s:%d\n", strlen(buf),inet_ntoa(cli_addr.sin_addr),(int) ntohs(cli_addr.sin_port) );
 #endif
-			memset_dynamic_buffer(dbuf);
+			reset_dynamic_buffer(dbuf);
 			append_dynamic_buffer(dbuf, buf, readret);
 			/* parse requests */
 			if(deal_buf(dbuf, readret, client_sock, sock, 8192, cli_addr)!=PERSISTENT){

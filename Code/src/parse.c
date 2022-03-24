@@ -1,8 +1,17 @@
 #include "parse.h"
 #define DEBUG
 /**
- * Given a char buffer returns the parsed request headers
+ * @brief 
+ *	deal with parsing messages
+ * @param buffer	: msgs recieved
+ * @param size		: total size of msg
+ * @param socketFd	: socket Number (Not used)
+ *
+ * @return 
+ * 	-->	Request : Success
+ * 	-->	NULL	: Failed
  */
+
 Request * parse(char *buffer, int size, int socketFd) {
 	//Differant states in the state machine
 	enum {

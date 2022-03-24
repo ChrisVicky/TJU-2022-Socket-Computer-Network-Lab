@@ -61,3 +61,6 @@ clean:
 	$(RM) -r $(OBJ_DIR)
 	$(RM) tags
 	$(RM) webServerStartCodes-new.tar
+
+forceclean: clean
+	find . -name '*.un~' | xargs rm
