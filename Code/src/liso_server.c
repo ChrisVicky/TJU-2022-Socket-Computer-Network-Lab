@@ -73,11 +73,11 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, i
 		append_dynamic_buffer(each, dest, strlen(dest));
 		temp = t + strlen(dest);
 #ifdef DEBUG
-		LOG("Starting dealing with msg: [%s]\n" ,each->buf);
+		LOG("Starting dealing with msg\n----------\n%s---------\n" ,each->buf);
 #endif
 		Return_value result = handle_request(client_sock, sock, each, cli_addr);	
 #ifdef DEBUG
-		LOG("msg to be sent '%s'\n" ,each->buf);
+		LOG("msg to be sent\n========== Sending ==========\n%s\n" ,each->buf);
 #endif
 		if (send(client_sock, each->buf, each->current, 0) != each->current)
 		{
@@ -86,9 +86,15 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, i
 			fprintf(stderr, "Error sending to client.\n");
 			return EXIT_FAILURE;
 		}
+#ifdef DEBUG
+		LOG("MSG Sent\n");
+#endif
 		if(result==CLOSE)
 			return CLOSE;
 	}
+#ifdef DEBUG
+	LOG("End with this buf, go back persistently\n");
+#endif
 	return PERSISTENT;
 } 
 int main(int argc, char* argv[])

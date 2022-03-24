@@ -23,6 +23,12 @@ void memset_dynamic_buffer(dynamic_buffer * db){
 }
 
 void free_dynamic_buffer(dynamic_buffer * db){
+	LOG("Starting Free db\n");
+	if(db==NULL){
+		ERROR("ERROR!!! FREEd before\n");
+		return ;
+	}
+	db->capacity = 0; db->current = 0;
 	free(db->buf);
 	free(db);
 }
@@ -34,10 +40,36 @@ void append_dynamic_buffer(dynamic_buffer * db, char * buf, size_t len){
 		while(req_len > cap) cap += DEFAULT_CAPACITY;
 		db->buf = (char *) realloc(db->buf, cap);
 		db->capacity = cap;
+		memset(db->buf+db->current, 0, len);
 	}
 	memcpy(db->buf+db->current, buf, len);
 	db->current += len;
 }
 
+void add_dynamic_buffer(dynamic_buffer *db, size_t len){
+	if(db->current + len > db->capacity){
+		int req_len = db->current + len;
+		int cap = db->capacity;
+		while(req_len > cap) cap += DEFAULT_CAPACITY;
+		db->buf = (char *) realloc(db->buf, cap);
+		db->capacity = cap;
+		memset(db->buf+db->current, 0, len);
+	}
+}
 
+void print_dynamic_buffer(dynamic_buffer *db){
+	if(db==NULL){
+		ERROR("DB NULL\n");
+		return ;
+	}
+	if(db->buf==NULL){
+		ERROR("DB->BUF NULL\n");
+		return ;
+	}
+	LOG("PRINT Dynamic Buffer %d\n%s" ,db->current,db->buf);
+}
 
+void reset_dynamic_buffer(dynamic_buffer *db){
+	db->capacity = DEFAULT_CAPACITY;
+	memset_dynamic_buffer(db);
+}

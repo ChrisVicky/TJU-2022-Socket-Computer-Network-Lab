@@ -50,6 +50,7 @@ Request * parse(char *buffer, int size, int socketFd) {
 	if (state == STATE_CRLFCRLF) {
 #ifdef DEBUG
 		LOG("TRY TO PARSE\n");
+		LOG("Parsing MSG\n%s\n" ,buf);
 #endif
 		Request *request = (Request *) malloc(sizeof(Request));
 		request->header_count=0;
@@ -59,10 +60,10 @@ Request * parse(char *buffer, int size, int socketFd) {
 		if (yyparse() == SUCCESS) {
 			return request;
 		}
-		/*else{
+		else{
 			yyrestart(yyin); // 输入文件重置
 			
-		}*/
+		}
 	}
 	//TODO Handle Malformed Requests
 	printf("Parsing Failed\n");

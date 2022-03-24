@@ -60,7 +60,7 @@ int handle_request_client(Request * request){
 int handle_send(int sock, char *msg, int fd_in){
 	char buf[BUF_SIZE];
 	int bytes_received;
-	fprintf(stdout, "Sending '%s'", msg);
+	fprintf(stdout, "========== Sending ==========\n%s", msg);
 	send(sock, msg , strlen(msg), 0);
 #ifdef DEBUG
 	LOG("Contents Sent:%ld\n",strlen(msg));
@@ -75,7 +75,7 @@ int handle_send(int sock, char *msg, int fd_in){
 			LOG("bytes_received: %d\n" ,bytes_received);
 #endif	
 			buf[bytes_received] = '\0';
-			fprintf(stdout, "Recieve '%s'\n" ,buf);
+			fprintf(stdout, "========== Recieve ==========\n%s\n" ,buf);
 		/* 	Request *request = parse(buf, strlen(buf), fd_in);
 			if(handle_request_client(request)==CONNECTION_CLOSE){
 				return CONNECTION_CLOSE;

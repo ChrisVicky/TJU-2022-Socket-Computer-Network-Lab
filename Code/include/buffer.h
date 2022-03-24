@@ -12,7 +12,9 @@
 #define BUFFER_H
 #include<string.h>
 #include<stdlib.h>
-
+#include "util.h"
+#include <time.h>
+#include <stdio.h>
 #define DEFAULT_CAPACITY 4096
 
 typedef struct dynamic_buffer{
@@ -25,5 +27,7 @@ void init_dynamic_buffer(dynamic_buffer *);
 void memset_dynamic_buffer(dynamic_buffer *);
 void free_dynamic_buffer(dynamic_buffer *);
 void append_dynamic_buffer(dynamic_buffer *, char *, size_t);
+void add_dynamic_buffer(dynamic_buffer*, size_t); 
+void print_dynamic_buffer(dynamic_buffer*);
 
 #endif

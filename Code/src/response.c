@@ -17,8 +17,8 @@ char *space = " ";
 char *crlf = "\r\n";
 char *colon = ":";
 
-char *server_info = "Liso, the friendly web server";
-
+char *server_info = "liso/1.0";
+char *default_path = "./static_site";
 
 
 int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
@@ -65,20 +65,24 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 
 // Handler --> Get, Post, Head
 void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
-	// This should be modified if Get has other uri
-	char * html_path = "/home/christopher/Programme/C/Web/webServerStartCodes-new/Code/static_site/index.html";
-	/*char * html_path =*/ 
-	if(strcmp(request->http_uri, "/")){
-		// File not Found
+	dynamic_buffer *uri_dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
+	//char *default_path =  "/home/christopher/Programme/C/Web/webServerStartCodes-new/Code/static_site";
+	init_dynamic_buffer(uri_dbuf);
+	append_dynamic_buffer(uri_dbuf, default_path, strlen(default_path));
+	append_dynamic_buffer(uri_dbuf, request->http_uri, strlen(request->http_uri));
+	if(!strcmp(request->http_uri, "/")){
+		// By default, This shall be index.html
+		append_dynamic_buffer(uri_dbuf, "index.html", strlen("index.html"));
+	}
+	struct stat file_buffer;
+	if(stat(uri_dbuf->buf, &file_buffer)){
 #ifdef DEBUG
-		ERROR("Path %s\n" ,html_path);
+		ERROR("Error address '%s'\n" ,uri_dbuf->buf);
 #endif
 		handle_404(dbuf, cli_addr);
 		free_request(request);
 		return;
 	}
-	struct stat file_buffer;
-	stat(html_path, &file_buffer);
 #define BUF_SIZE 256
 	char time_buffer[BUF_SIZE]={0}; 
 		get_time(time_buffer, BUF_SIZE);
@@ -86,12 +90,11 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 		get_last_modified(file_buffer, last_modified, BUF_SIZE);
 	char content_length[BUF_SIZE]={0};
 		sprintf(content_length, "%ld", file_buffer.st_size);
-	char content_type[] = "text"; // Only html
-	// TODO: Support other type
+	char content_type[BUF_SIZE] = {0};
+		get_file_type(uri_dbuf->buf, content_type);
 #undef BUF_SIZE	
 
-
-	memset_dynamic_buffer(dbuf);
+	reset_dynamic_buffer(dbuf);
 	set_response(dbuf, "200", "OK");
 	set_header(dbuf, "Date", time_buffer);
 	set_header(dbuf, "Server", server_info);
@@ -103,17 +106,24 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	}else{
 		set_header(dbuf, "Connection", "keep-alive");
 	}
+	set_msg(dbuf, crlf, strlen(crlf));
 
 	// TODO: Open file and attach it to msg
 	
-	char file_content[4096];
-	get_file_content(file_content, html_path, 4096);
-	if(file_content==NULL){
+	dynamic_buffer * dfbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
+	init_dynamic_buffer(dfbuf);
+	memset_dynamic_buffer(dfbuf);
+	if(get_file_content(dfbuf, uri_dbuf->buf)){
+#ifdef DEBUG
+		ERROR("Get File Content Error");
+#endif
 		handle_404(dbuf, cli_addr);
 		return ;
 	}
-	set_msg(dbuf, crlf);
-	set_msg(dbuf, file_content);
+#ifdef DEBUG
+	print_dynamic_buffer(dfbuf);
+#endif
+	set_msg(dbuf, dfbuf->buf, dfbuf->current);
 	//set_msg(dbuf, crlf);
 	AccessLog("OK", cli_addr, "GET", 200);
 	return ;
@@ -121,10 +131,19 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
  
 void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
 	// This should be modified if Get has other uri
-	char * html_path = "/home/christopher/Programme/C/Web/webServerStartCodes-new/Code/static_site/index.html";
-//	char * html_path = request->http_uri;	
+	dynamic_buffer *uri_dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
+	//char *default_path =  "/home/christopher/Programme/C/Web/webServerStartCodes-new/Code/static_site";
+	init_dynamic_buffer(uri_dbuf);
+	append_dynamic_buffer(uri_dbuf, default_path, strlen(default_path));
+	append_dynamic_buffer(uri_dbuf, request->http_uri, strlen(request->http_uri));
+	if(!strcmp(request->http_uri, "/")){
+		append_dynamic_buffer(uri_dbuf, "index.html", strlen("index.html"));
+	}
 	struct stat file_buffer;
-	if(stat(html_path, &file_buffer)){
+	if(stat(uri_dbuf->buf, &file_buffer)){
+#ifdef DEBUG
+		ERROR("Error address '%s'\n" ,uri_dbuf->buf);
+#endif
 		handle_404(dbuf, cli_addr);
 		free_request(request);
 		return;
@@ -136,8 +155,8 @@ void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 		get_last_modified(file_buffer, last_modified, BUF_SIZE);
 	char content_length[BUF_SIZE]={0};
 		sprintf(content_length, "%ld", file_buffer.st_size);
-	char content_type[] = "text"; // Only html
-	// TODO: Support other type
+	char content_type[BUF_SIZE] = {0};
+		get_file_type(uri_dbuf->buf, content_type);
 #undef BUF_SIZE
 
 	memset_dynamic_buffer(dbuf);
@@ -152,7 +171,7 @@ void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 	}else{
 		set_header(dbuf, "Connection", "keep-alive");
 	}
-	set_msg(dbuf, crlf);
+	set_msg(dbuf, crlf, strlen(crlf));
 	AccessLog("OK", cli_addr, "HEAD", 200);
 	return ;
 }
@@ -168,14 +187,14 @@ void handle_400(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "400", "Bad request");
 	set_header(dbuf, "Connection", "Close");
-	set_msg(dbuf, crlf);
+	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("400 Bad request", cli_addr);
 }
 
 void handle_404(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "404", "Not Found");
-	set_msg(dbuf, crlf);
+	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("404 Not Found", cli_addr);
 }
 
@@ -183,7 +202,7 @@ void handle_501(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "501", "Not Implemented");
 	set_header(dbuf, "Connection", "Close");
-	set_msg(dbuf, crlf);
+	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("501 Not Implemented", cli_addr);
 }
 
@@ -191,7 +210,7 @@ void handle_505(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "505", "HTTP Version not supported");
 	set_header(dbuf, "Connection", "Close");
-	set_msg(dbuf, crlf);
+	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("505 HTTP Version not supported", cli_addr);
 }
 
@@ -242,8 +261,8 @@ void set_header(dynamic_buffer *dbuf, char *key, char *value){
 	return ;
 }
 
-void set_msg(dynamic_buffer *dbuf, char* msg){
-	append_dynamic_buffer(dbuf, msg, strlen(msg));
+void set_msg(dynamic_buffer *dbuf, char* msg, int len){
+	append_dynamic_buffer(dbuf, msg, len);
 }
 
 // Get Time
@@ -260,40 +279,95 @@ void get_last_modified(struct stat file_buffer, char * last_modified, size_t BUF
 	strftime(last_modified, BUF_SIZE, "%a, %d %b %Y %H:%M:%S %Z",t);
 }
 
-void get_file_content(char *dfbuf, char*path, int BUF_SIZE){
+// Get Type
+TYPE get_file_type(char * path, char *result){
+	size_t len = strlen(path);
+	int i;
+	char extension[100]={0};
+	for(i=len-1;i>=0 && len-i<100;i--){
+		int c_len = len - i;
+		if(path[i]=='.'){
+			strncpy(extension, path+len-c_len+1, c_len-1);
+			break;
+		}
+	}
+	if(!strlen(extension)){
+		strcpy(result, "application/octet-stream");
+		return NONE;
+	}
+	for(i=0;extension[i];i++){
+		extension[i] = tolower(extension[i]);
+	}
+	switch(get_TYPE(extension)){
+		case HTML:
+			strcpy(result, "text/html");
+			return HTML;
+		case CSS:
+			strcpy(result, "text/css");
+			return CSS;
+		case PNG:
+			strcpy(result, "image/png");
+			return PNG;
+		case JPEG:
+			strcpy(result, "image/jpeg");
+			return JPEG;
+		case GIF:
+			strcpy(result, "image/gif");
+			return GIF;
+		default:
+			strcpy(result, "application/octet-stream");
+			return NONE;
+	}
+}
+// Get File TYPE
+TYPE get_TYPE(char *extension){
+	if(!strcmp(extension, "html") || !strcmp(extension, "text/html")){
+		return HTML;
+	}else if(!strcmp(extension, "css") || !strcmp(extension, "text/css")){
+		return CSS;
+	}else if(!strcmp(extension, "png") || !strcmp(extension, "image/png")){
+		return PNG;
+	}else if(!strcmp(extension, "jpeg") || !strcmp(extension, "image/jpeg")){
+		return JPEG;
+	}else if(!strcmp(extension, "gif") || !strcmp(extension, "image/gif")){
+		return GIF;
+	}else{
+		return NONE;
+	}
+}
+
+// Get File 
+// TODO: Add BUF_SIZE
+int get_file_content(dynamic_buffer * dfbuf, char*path){
 	int fd_in=0;
 	if((fd_in=open(path, O_RDONLY))<0){
 		ERROR("Cannot Open file '%s'\n" ,path);
-		dfbuf = NULL;
-		return;
+		free_dynamic_buffer(dfbuf);
+		return 1;
 	}
 	struct stat file_stat;
 	if((fstat(fd_in, &file_stat))<0){
 		ERROR("Fetching Status of File '%s' Error\n", path);
-		dfbuf = NULL;
-		return;
+		free_dynamic_buffer(dfbuf);
+		return 1;
 	}
 	size_t file_len = file_stat.st_size;
 	if(file_len<=0){
 		ERROR("File '%s' Empty\n" ,path);
+		free_dynamic_buffer(dfbuf);
 		close(fd_in);
-		dfbuf = NULL;
-		return;
+		return 1;
 	}
-	if(file_len > BUF_SIZE){
-		ERROR("File Too large\n");
+	char *file = mmap(0, file_len, PROT_READ, MAP_PRIVATE, fd_in, 0);
+	if(file==MAP_FAILED){
 		close(fd_in);
-		dfbuf = NULL;
-		return ;
+		free_dynamic_buffer(dfbuf);
+		ERROR("ERROR Mappig file\n");
+		return 1;
 	}
-	if(read(fd_in, dfbuf, BUF_SIZE)<1){
-		ERROR("Error reading file '%s'\n" ,path);
-		close(fd_in);
-		dfbuf=NULL;
-		return;
-	}
+	append_dynamic_buffer(dfbuf, file, file_len);
 	close(fd_in);
-	return;
+	return 0;
 
 }
 

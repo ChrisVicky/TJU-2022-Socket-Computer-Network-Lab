@@ -14,6 +14,8 @@
 #include<arpa/inet.h>
 #include<unistd.h>
 #include<sys/stat.h>
+#include<ctype.h>
+#include<sys/mman.h>
 #include "buffer.h"
 #include "parse.h"
 #include "util.h"
@@ -37,6 +39,16 @@ typedef enum METHODS{
 	NOT_SUPPORTED
 }METHODS;
 
+typedef enum TYPE{
+	HTML,
+	CSS,
+	PNG,
+	JPEG,
+	GIF,
+	NONE
+}TYPE;
+
+
 int handle_request(int, int, dynamic_buffer*, struct sockaddr_in);
 void helper_head(Request*, dynamic_buffer*, struct sockaddr_in);
 
@@ -50,16 +62,17 @@ void handle_501(dynamic_buffer*, struct sockaddr_in);
 void handle_505(dynamic_buffer*, struct sockaddr_in);
 
 METHODS method_switch(char *);
-
+TYPE get_TYPE(char *);
 
 char *get_header_value(Request*, char*);
 void free_request(Request*);
 
 void set_response(dynamic_buffer*, char*, char*);
 void set_header(dynamic_buffer*, char*, char*);
-void set_msg(dynamic_buffer*, char*);
+void set_msg(dynamic_buffer*, char*, int);
 
 void get_time(char*,size_t);
 void get_last_modified(struct stat, char*, size_t);
-void get_file_content(char*, char*, int);
+int get_file_content(dynamic_buffer*, char*);
+TYPE get_file_type(char*, char*);
 

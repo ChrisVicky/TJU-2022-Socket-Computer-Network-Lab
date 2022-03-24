@@ -7,7 +7,7 @@ OBJ := $(OBJ_DIR)/y.tab.o $(OBJ_DIR)/lex.yy.o $(OBJ_DIR)/parse.o $(OBJ_DIR)/buff
 # all yacc, lex and parse objects
 YLOOBJ := $(OBJ_DIR)/y.tab.o $(OBJ_DIR)/lex.yy.o $(OBJ_DIR)/parse.o $(OBJ_DIR)/buffer.o $(OBJ_DIR)/logger.o  $(OBJ_DIR)/response.o 
 # all binaries
-BIN := example echo_server echo_client
+BIN := example liso_server liso_client
 # C compiler
 CC  := gcc
 # C PreProcessor Flag
@@ -17,7 +17,7 @@ CFLAGS   := -g -Wall
 # DEPS = parse.h y.tab.h
 
 default: all
-all : example echo_server echo_client 
+all : example liso_server liso_client 
 
 example: $(OBJ)
 	$(CC) $^ -o $@
@@ -47,10 +47,10 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(OBJ_DIR)
 # response.o should be compiled after buffer.o
 $(OBJ_DIR)/response.o: $(OBJ_DIR)/buffer.o
 
-echo_server: $(YLOOBJ) $(OBJ_DIR)/echo_server.o 
+liso_server: $(YLOOBJ) $(OBJ_DIR)/liso_server.o 
 	$(CC) -Werror $^ -o $@
 
-echo_client: $(YLOOBJ) $(OBJ_DIR)/echo_client.o
+liso_client: $(YLOOBJ) $(OBJ_DIR)/liso_client.o
 	$(CC) -Werror $^ -o $@
 
 $(OBJ_DIR):
