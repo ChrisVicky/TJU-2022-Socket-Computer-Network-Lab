@@ -112,7 +112,6 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	
 	dynamic_buffer * dfbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
 	init_dynamic_buffer(dfbuf);
-	memset_dynamic_buffer(dfbuf);
 	if(get_file_content(dfbuf, uri_dbuf->buf)){
 #ifdef DEBUG
 		ERROR("Get File Content Error");
@@ -186,7 +185,7 @@ void handle_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 void handle_400(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "400", "Bad request");
-	set_header(dbuf, "Connection", "Close");
+	//set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("400 Bad request", cli_addr);
 }
@@ -201,7 +200,7 @@ void handle_404(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 void handle_501(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "501", "Not Implemented");
-	set_header(dbuf, "Connection", "Close");
+	//set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("501 Not Implemented", cli_addr);
 }
@@ -209,7 +208,7 @@ void handle_501(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 void handle_505(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "505", "HTTP Version not supported");
-	set_header(dbuf, "Connection", "Close");
+	//set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("505 HTTP Version not supported", cli_addr);
 }
