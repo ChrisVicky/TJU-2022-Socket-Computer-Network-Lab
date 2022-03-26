@@ -26,7 +26,8 @@
 #include "response.h"
 
 #define ECHO_PORT 9999
-#define BUF_SIZE (4096*10)
+ //#define BUF_SIZE (4096*10)
+#define BUF_SIZE 1
 #define DEBUG
 
 char * dest = "\r\n\r\n";
@@ -86,15 +87,22 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, i
 			return CLOSE;
 		free_dynamic_buffer(each);
 	}
-
+	update_dynamic_buffer(dbuf, temp);
 #ifdef DEBUG
-	LOG("msg to be sent\n======================= Sending ======================\n%ld\n" ,return_buffer->current);
+	LOG("msg to be sent\n======================= Sending ======================\n%s\n" ,return_buffer->buf);
 #endif
-
+	if(!return_buffer->current){
+#ifdef DEBUG
+		LOG("Not complete\n");
+#endif
+		free_dynamic_buffer(return_buffer);
+		return PERSISTENT;
+	}
 	if (send(client_sock, return_buffer->buf, return_buffer->current, 0) != return_buffer->current)
 	{
 		close_socket(client_sock);
 		close_socket(sock);
+		free_dynamic_buffer(return_buffer);
 		fprintf(stderr, "Error sending to client.\n");
 		return EXIT_FAILURE;
 	}
@@ -102,6 +110,7 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, i
 #ifdef DEBUG
 	LOG("End with this buf, go back persistently\n");
 #endif
+	free_dynamic_buffer(return_buffer);
 	return PERSISTENT;
 } 
 int main(int argc, char* argv[])
@@ -159,21 +168,21 @@ int main(int argc, char* argv[])
 		readret = 0;
 		dynamic_buffer *dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
 		init_dynamic_buffer(dbuf);
-
 		while((readret = recv(client_sock, buf, BUF_SIZE, 0)) >= 1)
 		{
 #ifdef DEBUG
 			LOG("Msg recieved: '%ld' from client : %s:%d\n", strlen(buf),inet_ntoa(cli_addr.sin_addr),(int) ntohs(cli_addr.sin_port) );
 #endif
-			reset_dynamic_buffer(dbuf);
 			append_dynamic_buffer(dbuf, buf, readret);
 			/* parse requests */
+			print_dynamic_buffer(dbuf);
 			if(deal_buf(dbuf, readret, client_sock, sock, 8192, cli_addr)!=PERSISTENT){
 				break;
 			}
 			memset(buf, 0, sizeof(buf));
 		} 
 
+		free_dynamic_buffer(dbuf);
 		if (readret == -1)
 		{
 			close_socket(client_sock);

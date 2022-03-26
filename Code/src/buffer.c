@@ -29,7 +29,8 @@ void free_dynamic_buffer(dynamic_buffer * db){
 		return ;
 	}
 	db->capacity = 0; db->current = 0;
-	free(db->buf);
+	if(strlen(db->buf))
+		free(db->buf);
 	free(db);
 }
 
@@ -66,10 +67,22 @@ void print_dynamic_buffer(dynamic_buffer *db){
 		ERROR("DB->BUF NULL\n");
 		return ;
 	}
-	LOG("PRINT Dynamic Buffer %ld\n%s" ,db->current,db->buf);
+	PRINT("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	PRINT("PRINT Dynamic Buffer %ld\n%s" ,db->current,db->buf);
+	PRINT("-----------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
 }
 
 void reset_dynamic_buffer(dynamic_buffer *db){
 	db->capacity = DEFAULT_CAPACITY;
 	memset_dynamic_buffer(db);
+}
+
+void update_dynamic_buffer(dynamic_buffer *db, char *front){
+	PRINT("Start updating\n");
+	dynamic_buffer * tmp = (dynamic_buffer*) malloc(sizeof(dynamic_buffer));
+	init_dynamic_buffer(tmp);
+	append_dynamic_buffer(tmp, front, strlen(front));
+	reset_dynamic_buffer(db);
+	append_dynamic_buffer(db, tmp->buf, tmp->current);
+	free_dynamic_buffer(tmp);
 }

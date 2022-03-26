@@ -23,6 +23,7 @@
 #include <time.h>
 #include "parse.h"
 #include "util.h"
+#include "buffer.h"
 #define ECHO_PORT 9999
 #define BUF_SIZE (4096*10)
 #define DEBUG
@@ -69,7 +70,7 @@ int handle_request_client(Request * request){
 	}
 	return CONNECTION_PERSIST;
 }
-#endif////////////////////////////////////////////////////////////////
+#endif
 
 /**
  * @brief Handle MSG Send and Recieve Operation 
@@ -83,10 +84,14 @@ int handle_request_client(Request * request){
  * 	-->	CONNECTION_CLOSE	: Close Current Connection
  */
 int handle_send(int sock, char *msg, int fd_in){
-	char buf[BUF_SIZE];
-	int bytes_received;
 	fprintf(stdout, "========== Sending ==========\n%s", msg);
 	send(sock, msg , strlen(msg), 0);
+	return 1;
+/*
+ *
+	char buf[BUF_SIZE];
+	int bytes_received;
+ * Send them allllll, and recieve together.
 #ifdef DEBUG
 	LOG("Contents Sent:%ld\n",strlen(msg));
 #endif
@@ -101,7 +106,7 @@ int handle_send(int sock, char *msg, int fd_in){
 	int i;
 	num_of_request = 1; 
 	for(i=0;i<num_of_request;i++){
-#endif////////////////////////////////////////////////////////////////
+#endif//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 		if((bytes_received = recv(sock, buf, BUF_SIZE, 0)) > 1)
 		{
@@ -117,7 +122,7 @@ int handle_send(int sock, char *msg, int fd_in){
 			if(handle_request_client(request)==CONNECTION_CLOSE){
 				return CONNECTION_CLOSE;
 			}
-#endif////////////////////////////////////////////////////////////////
+#endif//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 			memset(buf, 0, sizeof(buf));
 		}        
@@ -127,8 +132,8 @@ int handle_send(int sock, char *msg, int fd_in){
 	return CONNECTION_PERSIST;
 #else 
 	return 1;
-#endif////////////////////////////////////////////////////////////////
-
+#endif//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+*/
 }
 int main(int argc, char* argv[])
 {
@@ -196,6 +201,14 @@ int main(int argc, char* argv[])
 #endif
 			memset(msg, 0, sizeof(msg));
 		}
+	}
+	dynamic_buffer * dbuf = (dynamic_buffer*) malloc(sizeof(dynamic_buffer));
+	init_dynamic_buffer(dbuf);
+	char buf[BUF_SIZE];
+	int readret;
+	while((readret = recv(sock, buf, BUF_SIZE, 0)) >= 1){
+		append_dynamic_buffer(dbuf, buf, readret);
+		print_dynamic_buffer(dbuf);
 	}
 	freeaddrinfo(servinfo);
 	close(sock);    
