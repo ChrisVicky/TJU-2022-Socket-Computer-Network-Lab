@@ -224,6 +224,7 @@ void handle_400(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 void handle_404(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "404", "Not Found");
+	//set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("404 Not Found", cli_addr);
 }

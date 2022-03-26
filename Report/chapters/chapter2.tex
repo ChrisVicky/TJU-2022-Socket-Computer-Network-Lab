@@ -32,8 +32,8 @@
 
 \begin{figure}[htbp!]
     \centering
-    \subfigure[Response.c 和 Response.h]{\label{fig:Responsech}\includegraphics[width=4in]{responsech.png}}
-    \subfigure[liso\_server.c 和 liso\_client.c]{\label{fig:liso}\includegraphics[width=4in]{liso.png}}
+    \subfigure[Response.c 和 Response.h]{\label{fig:Responsech}\includegraphics[width=5in]{responsech.png}}
+    \subfigure[liso\_server.c 和 liso\_client.c]{\label{fig:liso}\includegraphics[width=5in]{liso.png}}
     \caption{核心代码}\label{fig:Main}
 \end{figure}
 
@@ -60,7 +60,7 @@
 
 \subsection{动态数组使用}
 
-动态数组的作用是解决缓冲区溢出问题，前文提到的两个可能出现溢出的地点，分别是读入文件时由于文件过大（或将其加入返回信息时）而溢出，另一个是在接收端虽然一次性接收的最大值由 BUF\_SIZE 控制，但是用户发送的请求大小不可定（例如 Lab3 中的 pipeline），导致缓冲区溢出。最终为了整体的和谐性，我们在大部分使用字符串数组的地方，都改用我们的动态数组。例如：
+动态数组的作用是解决缓冲区溢出问题，前文提到的两个可能出现溢出的地点，分别是读入文件时由于文件过大（或将其加入返回信息时）而溢出，另一个是在接收端虽然一次性接收的最大值由 BUF\_SIZE 控制，但是用户发送的请求大小不可定（例如 Lab3 中的 pipeline），导致缓冲区溢出。最终为了整体的和谐性，我们在大多数使用字符串数组的地方，都改用我们的动态数组。例如：
 
 \paragraph*{读入文件时} 首先使用 stat() 获取文件大小，然后调用函数 add\_dynamic\_buffer() 函数对我们的动态数组进行可用空间的检验。最后再通过 read() 或者 mmap() 将文件写入动态数组。
 
@@ -69,30 +69,41 @@
 \paragraph*{接收 socket 信息时} 由前文提到地 recv() 函数的性质，我们知道应该通过 while 来不断读取管道里的信息，如图\ref{fig:liso} 右侧第 171 行。通过 append\_dynamic\_buffer() 函数，将读取的信息添加到当前动态数组 dbuf 中。每次处理缓冲区，即是对 dbuf 中的数据进行拆分（确定一份请求报文）、解析与返回，最后调用 update\_dynamic\_buffer() 函数，将该报文从动态数组中丢弃。最大限度地节约空间，并解决缓冲区溢出问题。
 \begin{figure}[htbp!]
     \centering
-    \subfigure[dynamic\_buffer.c 和 dynamic\_buffer.h]{\label{fig:dynamicBuffer}\includegraphics[width=5in]{dynamic_buffer.png}}
-    \subfigure[handle\_head 函数]{\label{fig:handleHead}\includegraphics[width=2in]{handl_head.png}}
-    \subfigure[日志文件]{\label{fig:log}\includegraphics[width=3in]{log.png}}
-    \caption{File in Chapter 2}\label{fig:Chapter2}
+    \subfigure[dynamic\_buffer.c 和 dynamic\_buffer.h]{\label{fig:dynamicBuffer}\includegraphics[width=5.5in]{dynamic_buffer.png}}
+    \subfigure[handle\_head 函数]{\label{fig:handleHead}\includegraphics[width=2.1in]{handl_head.png}}
+    \subfigure[日志文件]{\label{fig:log}\includegraphics[width=3.3in]{log.png}}
+    \caption{动态数组、日志文件以及 Handle Head 函数}\label{fig:Chapter2}
 \end{figure}
 
 
-\subsection{验证}
+\subsection*{验证}
 如图\ref{fig:buffer}，即使将缓冲区大小设置为 1，我们的 server 依旧正常处理并返回信息（测试样例为 pipeline，由于和 Persistent Connection 相关联，故一起实现了）。
+
+% \begin{figure}[htbp!]
+%     \centering
+%     \includegraphics[width=4.4.5in]{BUF=1.png}
+%     \caption{buffer test, BUF\_SIZE = 1}\label{fig:buffer}
+% \end{figure}
 
 \begin{figure}[htbp!]
     \centering
-    \includegraphics[width=5.7in]{BUF=1.png}
-    \caption{buffer test, BUF\_SIZE = 1}\label{fig:buffer}
+    \subfigure[buffer\_test,BUF\_SIZE=1]{\label{fig:buffer}\includegraphics[width=3.5in]{BUF=1.png}}
+    \subfigure[get\_file\_content函数]{\label{fig:openfile}\includegraphics[width=2in]{getFileContent.png}}
+    \caption{测试 buffer 以及 get\_file\_content 函数}\label{fig:Chapter2.2}
 \end{figure}
 
 \section{日志记录模块实现}
 日志记录模块借用了 Apache 标准，使用 C 宏定义完成第一层封装，采用 logger.c 与 logger.h 配合，进行向特定文件的输入，实现了 log 的可跟踪性。具体宏定义如图\ref{fig:log} 所示。
 
-
-
 \section{读写磁盘文件错误处理}
+只有 GET 和 HEAD 请求涉及对文件的处理。根据之前的描述，我们首先使用 stat() 函数对磁盘文件进行试探性的访问。如果在此时出错，可能有 1. 路径不存在； 2. 没有查看权限。在服务器看来，我们只需返回 404 错误即可。
 
-\section{其他细节实现}
+在 GET 的处理中，我们还需对文件进行读取，此时可能又会产生 3. 无法打开的错误； 4. 文件为空；以及 5. 无法正确映射到内存；等问题（由于我们使用了上一节提到的动态数组，不会存在溢出问题）。
 
+考虑完上述问题，我们实现了如图\ref{fig:openfile} 的代码。
 
-
+% \begin{figure}[htbp!]
+%     \centering
+%     \includegraphics[width=2.5in]{getFileContent.png}
+%     \caption{get\_file\_content 函数}\label{fig:openfile}
+% \end{figure}

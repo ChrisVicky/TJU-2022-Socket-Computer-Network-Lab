@@ -26,8 +26,8 @@
 #include "response.h"
 
 #define ECHO_PORT 9999
- //#define BUF_SIZE (4096*10)
-#define BUF_SIZE 1
+#define BUF_SIZE 1024
+// #define BUF_SIZE 1
 #define DEBUG
 
 char * dest = "\r\n\r\n";
