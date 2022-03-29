@@ -158,7 +158,9 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "Socket failed");
 		return EXIT_FAILURE;
 	}
-
+	LOG("SOCKET %d\n", sock);
+	int w;
+	scanf("%d",&w);
 	if (connect (sock, servinfo->ai_addr, servinfo->ai_addrlen) == -1){
 		fprintf(stderr, "Connect");
 		return EXIT_FAILURE;
@@ -206,6 +208,9 @@ int main(int argc, char* argv[])
 	init_dynamic_buffer(dbuf);
 	char buf[BUF_SIZE];
 	int readret;
+#ifdef DEBUG
+	LOG("Starting Recving\n");
+#endif
 	while((readret = recv(sock, buf, BUF_SIZE, 0)) >= 1){
 		append_dynamic_buffer(dbuf, buf, readret);
 		print_dynamic_buffer(dbuf);
