@@ -63,6 +63,9 @@ int close_socket(int sock)
  * 	-->	CLOSE		: Close current connection ( Which can be ignored in our lab )
  */
 int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, struct sockaddr_in cli_addr){
+	/**
+	 * strstr --> Split it out ... hanle ... return them all together.
+	 */
 	print_dynamic_buffer(dbuf);
 	char * t, *temp=dbuf->buf;
 	/* deal pipeline */

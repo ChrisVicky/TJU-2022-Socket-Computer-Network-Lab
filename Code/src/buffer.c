@@ -10,7 +10,6 @@
 
 
 #include "buffer.h"
-#include <cstring>
 void init_dynamic_buffer(dynamic_buffer * db){
 	db->buf = (char *) malloc(sizeof(char) * DEFAULT_CAPACITY);
 	db->capacity = DEFAULT_CAPACITY;
@@ -117,5 +116,5 @@ void update_dynamic_buffer(dynamic_buffer *db, char *front){
  */
 void catpart_dynamic_buffer(dynamic_buffer *dest, dynamic_buffer *src, int l, int len){
 	add_dynamic_buffer(dest, len);
-	strncpy(dest->buf, str->buf+l, len);
+	strncpy(dest->buf, src->buf+l, len);
 }
