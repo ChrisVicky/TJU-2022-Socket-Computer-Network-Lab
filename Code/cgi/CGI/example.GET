@@ -1,0 +1,12 @@
+GET /w/api.php?action=opensearch&search=HT&namespace=0&suggest= HTTP/1.1
+Host: en.wikipedia.org
+Connection: keep-alive
+X-Requested-With: XMLHttpRequest
+User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.186 Safari/535.1
+Accept: application/json, text/javascript, */*; q=0.01
+Referer: http://en.wikipedia.org/w/index.php?title=Special%3ASearch&search=test+wikipedia+search
+Accept-Encoding: gzip,deflate,sdch
+Accept-Language: en-US,en;q=0.8
+Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3
+Cookie: clicktracking-session=v7JnLVqLFpy3bs5hVDdg4Man4F096mQmY; mediaWiki.user.bucket%3Aext.articleFeedback-tracking=8%3Aignore; mediaWiki.user.bucket%3Aext.articleFeedback-options=8%3Ashow; mediaWiki.user.bucket:ext.articleFeedback-tracking=8%3Aignore; mediaWiki.user.bucket:ext.articleFeedback-options=8%3Ashow
+

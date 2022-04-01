@@ -91,17 +91,33 @@ void print_dynamic_buffer(dynamic_buffer *db){
 }
 
 void reset_dynamic_buffer(dynamic_buffer *db){
+	//free_buffer_dynamic_buffer(db);
 	init_dynamic_buffer(db);
 }
 
-void update_dynamic_buffer(dynamic_buffer *db, char *front){
+
+/**
+ * @brief Change the Head of a db to its access_end
+ *
+ * @param db
+ */
+void update_dynamic_buffer(dynamic_buffer *db){
+	LOG("Updating!\n");
+	print_dynamic_buffer(db);
+	strcpy(db->buf, db->buf+db->access_end);
+	db->current -= db->access_end;
+	db->capacity -= db->access_end;
+	db->access_end = 0;
+	LOG("END Updating\n");
+	print_dynamic_buffer(db);
+	/*
 	print_dynamic_buffer(db);
 	dynamic_buffer * tmp = (dynamic_buffer*) malloc(sizeof(dynamic_buffer));
 	init_dynamic_buffer(tmp);
 	append_dynamic_buffer(tmp, front, strlen(front));
 	init_dynamic_buffer(db);
 	append_dynamic_buffer(db, tmp->buf, tmp->current);
-	free_dynamic_buffer(tmp);
+	free_dynamic_buffer(tmp);*/
 }
 
 /**

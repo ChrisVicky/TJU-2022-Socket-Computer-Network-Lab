@@ -66,19 +66,22 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 	/**
 	 * strstr --> Split it out ... hanle ... return them all together.
 	 */
+	LOG("CURRENT DBUF:\n");
 	print_dynamic_buffer(dbuf);
-	char * t, *temp=dbuf->buf;
+	printf("----------------------\n");
+	char * t;
 	/* deal pipeline */
-	dynamic_buffer *return_buffer = (dynamic_buffer*) malloc(sizeof(dynamic_buffer));
-	init_dynamic_buffer(return_buffer);
-	while((t=strstr(temp,dest))!=NULL){
-		int len = t - temp;
+	Return_value result = PERSISTENT;	
+	dynamic_buffer * each = (dynamic_buffer *)malloc(sizeof(dynamic_buffer));
+	init_dynamic_buffer(each);
+
+	while((t=strstr(dbuf->buf,dest))!=NULL){
+		int len = t - dbuf->buf;
 #ifdef debug
 		print("============================current cnt: %d=========================\n",++cnt_now);
 #endif
-		dynamic_buffer * each = (dynamic_buffer *)malloc(sizeof(dynamic_buffer));
-		init_dynamic_buffer(each);
-		append_dynamic_buffer(each, temp, len);
+		memset_dynamic_buffer(each);
+		append_dynamic_buffer(each, dbuf->buf, len);
 		append_dynamic_buffer(each, dest, strlen(dest));
 		// Update Access end --> The end of a caption
 		dbuf->access_end += each->current;
@@ -86,39 +89,42 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 #ifdef DEBUG
 		LOG("Starting dealing with msg\n----------\n%s\n---------\n" ,each->buf);
 #endif
-		Return_value result = handle_request(client_sock, sock, each, cli_addr, dbuf);	
-		append_dynamic_buffer(return_buffer, each->buf, each->current);
-		if(result==CLOSE) return CLOSE;
-		free_dynamic_buffer(each);
-		temp = dbuf->buf + dbuf->access_end;
-	}
-	update_dynamic_buffer(dbuf, temp);
-
-	if(!return_buffer->current){
+		result = handle_request(client_sock, sock, each, cli_addr, dbuf);	
+		if(result==CLOSE_FROM_CLIENT){
+			// client is asking for close;
+			free_dynamic_buffer(each);
+			return CLOSE;
+		}
+		if(result==NOT_COMPLETE){
+			// Need to receive more Cannot Return now;
+			dbuf->access_end -= each->current;
+			free_dynamic_buffer(each);
+			return NOT_COMPLETE;
+		}		
+		// Can be sent to client;
 #ifdef DEBUG
-		LOG("Not complete\n");
-#endif
-		free_dynamic_buffer(return_buffer);
-		return PERSISTENT;
+	LOG("msg to be sent\n======================= Sending ======================\n%s\n" ,each->buf);
+#endif	
+		if(send(client_sock, each->buf, each->current, 0)!=each->current){
+			// Something is wrong
+			close_socket(client_sock);
+			close_socket(sock);
+			free_dynamic_buffer(each);
+			ERROR("ERROR Sending Back to Client\n");
+			return ERROR;
+		}
+		if(result==CLOSE){
+			break;
+		}
+		update_dynamic_buffer(dbuf);
 	}
-#ifdef DEBUG
-	LOG("msg to be sent\n======================= Sending ======================\n%s\n" ,return_buffer->buf);
-#endif
-	if (send(client_sock, return_buffer->buf, return_buffer->current, 0) != return_buffer->current)
-	{
-		close_socket(client_sock);
-		close_socket(sock);
-		free_dynamic_buffer(return_buffer);
-		ERROR("Error sending to client.\n");
-		return EXIT_FAILURE;
-	}
-
+	free_buffer_dynamic_buffer(each);
 #ifdef DEBUG
 	LOG("End with this buf, go back persistently\n");
 #endif
-	free_dynamic_buffer(return_buffer);
-	return PERSISTENT;
+	return result;
 } 
+
 int main(int argc, char* argv[])
 {
 	int sock, client_sock;
@@ -214,22 +220,37 @@ int main(int argc, char* argv[])
 					LOG("MSG RECVED:\n%s\n" ,buf);
 #endif
 					append_dynamic_buffer(ADBUF[fd], buf, readret);
-					if(deal_buf(ADBUF[fd], readret, fd, sock, cli_addr[client_sock])!=PERSISTENT){
-						break;
+					Return_value ret = deal_buf(ADBUF[fd], readret, fd, sock, cli_addr[client_sock]);
+				
+					switch(ret){
+						case CORRECT: 
+							break;
+						case ERROR:
+							exit(EXIT_FAILURE);
+						case CLOSE:
+							close_socket(fd);
+							free_buffer_dynamic_buffer(ADBUF[fd]);
+							FD_CLR(fd, &tot_fds);
+							LeaveLog(cli_addr[fd],fd);
+							break;
+						case PERSISTENT:
+							ACCESSLOG("Complete with this\n");
+							break;
+						default:
+							ACCESSLOG("Not complete, wait next time");
 					}
 				}else if(!readret){
 					/* Receive Nothing --> Close Connection */
 					free_buffer_dynamic_buffer(ADBUF[fd]);
 					close_socket(fd);
 					FD_CLR(fd, &tot_fds);
-					LeaveLog(cli_addr[client_sock], client_sock);
+					LeaveLog(cli_addr[fd], fd);
 				}else{
 					close_socket(fd);
 					ERROR("Readret < 0!\n");
 					break;
 				}
 			}
-
 		} 
 	}
 	for(i=0;i<MAX_FD_SIZE;i++) free_dynamic_buffer(ADBUF[i]);

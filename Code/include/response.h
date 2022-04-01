@@ -22,9 +22,12 @@
 #include "logger.h"
 
 typedef enum Return_value{
+	CORRECT,
 	ERROR,
 	CLOSE,
-	PERSISTENT
+	CLOSE_FROM_CLIENT,
+	PERSISTENT,
+	NOT_COMPLETE,
 }Return_value;
 
 typedef enum Connection_status{
@@ -52,8 +55,8 @@ typedef enum TYPE{
 int handle_request(int, int, dynamic_buffer*, struct sockaddr_in, dynamic_buffer*);
 void helper_head(Request*, dynamic_buffer*, struct sockaddr_in);
 
-void handle_get(Request*, dynamic_buffer*, struct sockaddr_in, int);
-void handle_head(Request*, dynamic_buffer*, struct sockaddr_in, int);
+int handle_get(Request*, dynamic_buffer*, struct sockaddr_in, int);
+int handle_head(Request*, dynamic_buffer*, struct sockaddr_in, int);
 void handle_post(Request*, dynamic_buffer*, struct sockaddr_in, int, dynamic_buffer*);
 
 void handle_400(dynamic_buffer*, struct sockaddr_in);

@@ -33,6 +33,14 @@ int current_clinet_fd = 0;
  * @return 
  * 	-->	PERSISTENT	: ..
  * 	--> 	CLOSE		: Not important
+ *
+ * @Process
+ * 	1. Parsing Error --> 400
+ * 	2. Check Connection Close
+ * 	3. Check Http Version --> 505
+ * 	4. Methods Error --> 501
+ * 	5. CGI ? Static Path,
+ *
  */
 int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, dynamic_buffer *odbuf){
 	current_clinet_fd = client_sock;
@@ -41,41 +49,62 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 	// 400 Error Parsing
 	if(request == NULL){
 		handle_400(dbuf, cli_addr);
-		return PERSISTENT;
+		return CLOSE;
 	}
 
 	// check connection:close
 	Return_value return_value = PERSISTENT;
 	char *connection_value = get_header_value(request, "Connection");
 	if(!strcmp(connection_value, "Close")){
-		return_value = CLOSE;
+		// Still --> May be a Post or Get to send msg here.
+		return_value = CLOSE_FROM_CLIENT;
 	}
 
 	// 505 Http version not supported
 	if(strcmp(my_http_version, request->http_version)){
 		handle_505(dbuf, cli_addr);
 		free_request(request);
-	
 		//	return CLOSE;
 		//	No need to worry ,because we do not strictly follow RFC2616
-		return PERSISTENT;
+		return CLOSE;
 	}
 
+	// TODO: 
+	// 	Check Whether it is Completely Received
+
+
+
 	// Methods, 501 Method not supported.
-	switch(method_switch(request->http_method)){
-		case GET:
-			handle_get(request, dbuf, cli_addr, return_value);
-			break;
-		case HEAD:
-			handle_head(request, dbuf, cli_addr, return_value);
-			break;
-		case POST:
-			handle_post(request, dbuf, cli_addr, return_value, odbuf);
-			break;
-		default:
-			handle_501(dbuf, cli_addr);
-			free_request(request);
-			return PERSISTENT;
+	METHODS this_method = method_switch(request->http_method);
+	if(this_method==NOT_SUPPORTED){
+		handle_501(dbuf, cli_addr);
+		free_request(request);
+		return CLOSE;
+	}
+	// Check cgi?
+	char *cgi_prefix = "/cgi/";
+	char prefix[10] = {0};
+	if(strlen(request->http_uri) >= strlen(cgi_prefix)){
+		strncpy(prefix, request->http_uri, strlen(cgi_prefix));
+	}
+	if(strcmp(cgi_prefix, prefix)){
+		LOG("NOT CGI\n");
+		//Static!!
+		switch(this_method){
+			case GET:
+				return handle_get(request, dbuf, cli_addr, return_value);
+			case HEAD:
+				return handle_head(request, dbuf, cli_addr, return_value);
+			case POST:
+				handle_post(request, dbuf, cli_addr, return_value, odbuf);
+				break;
+			default:
+				ERROR("Should Not be here");
+				exit(EXIT_FAILURE);
+		}
+	}else{
+		LOG("CGI !!\n");
+		// CGI HERE!
 	}
 	return PERSISTENT;
 } 
@@ -89,7 +118,7 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
  * @param return_value		: returned value
  */
 // Handler --> Get, Post, Head
-void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
+int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
 	dynamic_buffer *uri_dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
 	//char *default_path =  "/home/christopher/Programme/C/Web/webServerStartCodes-new/Code/static_site";
 	init_dynamic_buffer(uri_dbuf);
@@ -106,24 +135,24 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 #endif
 		handle_404(dbuf, cli_addr);
 		free_request(request);
-		return;
+		return CLOSE;
 	}
 #define BUF_SIZE 256
 	char time_buffer[BUF_SIZE]={0}; 
-		get_time(time_buffer, BUF_SIZE);
+	get_time(time_buffer, BUF_SIZE);
 	char last_modified[BUF_SIZE]={0}; 
-		get_last_modified(file_buffer, last_modified, BUF_SIZE);
+	get_last_modified(file_buffer, last_modified, BUF_SIZE);
 	char content_length[BUF_SIZE]={0};
-		sprintf(content_length, "%ld", file_buffer.st_size);
+	sprintf(content_length, "%ld", file_buffer.st_size);
 	char content_type[BUF_SIZE] = {0};
-		get_file_type(uri_dbuf->buf, content_type);
+	get_file_type(uri_dbuf->buf, content_type);
 #undef BUF_SIZE	
 
 	reset_dynamic_buffer(dbuf);
 	set_response(dbuf, "200", "OK");
 	set_header(dbuf, "Date", time_buffer);
 	set_header(dbuf, "Server", server_info);
- 	set_header(dbuf, "Last-Modified", last_modified);
+	set_header(dbuf, "Last-Modified", last_modified);
 	set_header(dbuf, "Content-Length", content_length);
 	set_header(dbuf, "Content-Type", content_type);
 	if(return_value==CLOSE){
@@ -134,7 +163,7 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	set_msg(dbuf, crlf, strlen(crlf));
 
 	// TODO: Open file and attach it to msg
-	
+
 	dynamic_buffer * dfbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
 	init_dynamic_buffer(dfbuf);
 	if(get_file_content(dfbuf, uri_dbuf->buf)){
@@ -142,7 +171,7 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 		ERROR("Get File Content Error");
 #endif
 		handle_404(dbuf, cli_addr);
-		return ;
+		return CLOSE;
 	}
 #ifdef DEBUG
 	//print_dynamic_buffer(dfbuf);
@@ -150,9 +179,9 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	set_msg(dbuf, dfbuf->buf, dfbuf->current);
 	//set_msg(dbuf, crlf);
 	AccessLog("OK", cli_addr, "GET", 200, current_clinet_fd);
-	return ;
+	return PERSISTENT;
 }
- 
+
 /**
  * @brief 		: Handle Head requests
  *
@@ -161,7 +190,7 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
  * @param cli_addr	: Client's address
  * @param return_value	: NOT IMPORTANT
  */
-void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
+int handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
 	// This should be modified if Get has other uri
 	dynamic_buffer *uri_dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
 	//char *default_path =  "/home/christopher/Programme/C/Web/webServerStartCodes-new/Code/static_site";
@@ -178,24 +207,24 @@ void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 #endif
 		handle_404(dbuf, cli_addr);
 		free_request(request);
-		return;
+		return CLOSE;
 	}
 #define BUF_SIZE 256
 	char time_buffer[BUF_SIZE]={0}; 
-		get_time(time_buffer, BUF_SIZE);
+	get_time(time_buffer, BUF_SIZE);
 	char last_modified[BUF_SIZE]={0}; 
-		get_last_modified(file_buffer, last_modified, BUF_SIZE);
+	get_last_modified(file_buffer, last_modified, BUF_SIZE);
 	char content_length[BUF_SIZE]={0};
-		sprintf(content_length, "%ld", file_buffer.st_size);
+	sprintf(content_length, "%ld", file_buffer.st_size);
 	char content_type[BUF_SIZE] = {0};
-		get_file_type(uri_dbuf->buf, content_type);
+	get_file_type(uri_dbuf->buf, content_type);
 #undef BUF_SIZE
 
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "200", "OK");
 	set_header(dbuf, "Date", time_buffer);
 	set_header(dbuf, "Server", server_info);
- 	set_header(dbuf, "Last-Modified", last_modified);
+	set_header(dbuf, "Last-Modified", last_modified);
 	set_header(dbuf, "Content-Length", content_length);
 	set_header(dbuf, "Content-Type", content_type);
 	if(return_value==CLOSE){
@@ -205,7 +234,7 @@ void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 	}
 	set_msg(dbuf, crlf, strlen(crlf));
 	AccessLog("OK", cli_addr, "HEAD", 200, current_clinet_fd);
-	return ;
+	return PERSISTENT;
 }
 
 void handle_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value, dynamic_buffer *odbuf){
@@ -217,9 +246,9 @@ void handle_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 	// Get Paras from Request;
 	char *ch_length = get_header_value(request, "Content-Length");
 	if(ch_length==NULL){
-		ErrorLog("No attribute Content-Length, Parsing Failed", cli_addr, 400);
-		handle_400(dbuf, cli_addr);
-		return;
+	ErrorLog("No attribute Content-Length, Parsing Failed", cli_addr, 400);
+	handle_400(dbuf, cli_addr);
+	return;
 	}
 	int content_length = atoi(get_header_value(request, "Content-Length"));
 	dynamic_buffer *paras = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
@@ -238,7 +267,7 @@ void handle_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 void handle_400(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "400", "Bad request");
-	//set_header(dbuf, "Connection", "Close");
+	set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("400 Bad request", cli_addr, current_clinet_fd);
 }
@@ -246,7 +275,7 @@ void handle_400(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 void handle_404(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "404", "Not Found");
-	//set_header(dbuf, "Connection", "Close");
+	set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("404 Not Found", cli_addr, current_clinet_fd);
 }
@@ -254,7 +283,7 @@ void handle_404(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 void handle_501(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "501", "Not Implemented");
-	//set_header(dbuf, "Connection", "Close");
+	set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("501 Not Implemented", cli_addr, current_clinet_fd);
 }
@@ -262,7 +291,7 @@ void handle_501(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 void handle_505(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "505", "HTTP Version not supported");
-	//set_header(dbuf, "Connection", "Close");
+	set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
 	ErrorLog("505 HTTP Version not supported", cli_addr, current_clinet_fd);
 }

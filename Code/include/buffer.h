@@ -32,7 +32,7 @@ void append_dynamic_buffer(dynamic_buffer *, char *, size_t);
 void add_dynamic_buffer(dynamic_buffer*, size_t); 
 void print_dynamic_buffer(dynamic_buffer*);
 void reset_dynamic_buffer(dynamic_buffer*);
-void update_dynamic_buffer(dynamic_buffer*, char*);
+void update_dynamic_buffer(dynamic_buffer*);
 void catpart_dynamic_buffer(dynamic_buffer*, dynamic_buffer*, int, int);
 
 
