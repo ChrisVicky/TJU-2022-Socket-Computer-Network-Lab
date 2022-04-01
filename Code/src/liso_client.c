@@ -25,7 +25,7 @@
 #include "util.h"
 #include "buffer.h"
 #define ECHO_PORT 9999
-#define BUF_SIZE (4096*10)
+#define BUF_SIZE (4096*40)
 #define DEBUG
 
 //#define RFC2616
@@ -159,8 +159,6 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 	LOG("SOCKET %d\n", sock);
-	int w;
-	scanf("%d",&w);
 	if (connect (sock, servinfo->ai_addr, servinfo->ai_addrlen) == -1){
 		fprintf(stderr, "Connect");
 		return EXIT_FAILURE;

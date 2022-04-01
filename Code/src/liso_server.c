@@ -35,6 +35,7 @@
 #define DEBUG
 
 char * dest = "\r\n\r\n";
+int CNT_NOW = 0;
 
 int close_socket(int sock)
 {
@@ -71,7 +72,7 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 	while((t=strstr(temp,dest))!=NULL){
 		int len = t - temp;
 #ifdef DEBUG
-		PRINT("============================CURRENT CNT: %d=========================\n",cnt++);
+		PRINT("============================CURRENT CNT: %d=========================\n",++CNT_NOW);
 #endif
 		dynamic_buffer * each = (dynamic_buffer *)malloc(sizeof(dynamic_buffer));
 		init_dynamic_buffer(each);
