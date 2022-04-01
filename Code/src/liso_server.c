@@ -32,7 +32,7 @@
 #define ECHO_PORT 9999
 #define BUF_SIZE 1024
 // #define BUF_SIZE 1
-#define DEBUG
+//#define DEBUG
 
 char * dest = "\r\n\r\n";
 int CNT_NOW = 0;
@@ -65,7 +65,6 @@ int close_socket(int sock)
 int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, struct sockaddr_in cli_addr){
 	print_dynamic_buffer(dbuf);
 	char * t, *temp=dbuf->buf;
-	int cnt = 0;
 	/* deal pipeline */
 	dynamic_buffer *return_buffer = (dynamic_buffer*) malloc(sizeof(dynamic_buffer));
 	init_dynamic_buffer(return_buffer);
@@ -122,10 +121,11 @@ int main(int argc, char* argv[])
 	int sock, client_sock;
 	ssize_t readret; /* int */
 	socklen_t cli_size; /* uint */
-	struct sockaddr_in addr, cli_addr; 
+	struct sockaddr_in addr, cli_addr_tmp; 
 	/*unsigned short int, unsigned int*/
 	char buf[BUF_SIZE];
 	fd_set tot_fds;
+	struct sockaddr_in cli_addr[MAX_FD_SIZE];
 	dynamic_buffer *ADBUF[MAX_FD_SIZE];
 	int i;
 	for(i=0;i<MAX_FD_SIZE;i++){
@@ -170,9 +170,8 @@ int main(int argc, char* argv[])
 	while (1)
 	{
 		fd_set tmp_fds = tot_fds;
-		PRINT("_______________________________________________________________________________\n");
-		PRINT("			START LISTENING AT 127.0.0.1 : %d \n" ,ECHO_PORT);
-		PRINT("|______________________________________________________________________________|\n");
+//		HeadLog(addr);
+		PRINTHEAD(ECHO_PORT);
 #ifdef DEBUG
 		LOG("Start Listening at port %d\n" ,ECHO_PORT);
 #endif
@@ -205,15 +204,17 @@ int main(int argc, char* argv[])
 				/* 	Client's fd equals to server's socket
 				 * --> 	Request for Connection;
 				 *  */
-				cli_size = sizeof(cli_addr);
-				if ((client_sock = accept(sock, (struct sockaddr *) &cli_addr ,&cli_size)) == -1)
+				cli_size = sizeof(cli_addr_tmp);
+				if ((client_sock = accept(sock, (struct sockaddr *) &cli_addr_tmp ,&cli_size)) == -1)
 				{
 					close(sock);
 					fprintf(stderr, "Error accepting connection.\n");
 					return EXIT_FAILURE;
 				}
+				cli_addr[client_sock] = cli_addr_tmp;
 				FD_SET(client_sock, &tot_fds);
 				init_dynamic_buffer(ADBUF[client_sock]);
+				AcceptLog(cli_addr[client_sock], client_sock);
 #ifdef DEBUG
 				LOG("Accepting Connection FROM %d, client_sock %d\n" ,fd, client_sock);
 #endif
@@ -225,7 +226,7 @@ int main(int argc, char* argv[])
 					LOG("STARTING RECV MSG FROM %d\n" ,fd);
 #endif
 					append_dynamic_buffer(ADBUF[fd], buf, readret);
-					if(deal_buf(ADBUF[fd], readret, fd, sock, cli_addr)!=PERSISTENT){
+					if(deal_buf(ADBUF[fd], readret, fd, sock, cli_addr[client_sock])!=PERSISTENT){
 						// TODO: cli_addr is not updated --> It's not the right one;
 						break;
 					}
@@ -234,6 +235,7 @@ int main(int argc, char* argv[])
 					free_buffer_dynamic_buffer(ADBUF[fd]);
 					close_socket(fd);
 					FD_CLR(fd, &tot_fds);
+					LeaveLog(cli_addr[client_sock], client_sock);
 #ifdef DEBUG
 					LOG("Close Client on FD %d\n" ,fd);
 #endif

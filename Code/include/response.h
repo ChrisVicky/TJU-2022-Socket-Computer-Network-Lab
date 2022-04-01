@@ -45,6 +45,7 @@ typedef enum TYPE{
 	PNG,
 	JPEG,
 	GIF,
+	ICO,
 	NONE
 }TYPE;
 

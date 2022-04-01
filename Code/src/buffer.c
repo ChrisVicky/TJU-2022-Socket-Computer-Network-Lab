@@ -33,7 +33,10 @@ void free_buffer_dynamic_buffer(dynamic_buffer *db){
 	free(db->buf);
 }
 void free_dynamic_buffer(dynamic_buffer * db){
+
+#ifdef DEBUG
 	LOG("Starting Free db\n");
+#endif
 	if(db==NULL){
 		ERROR("ERROR!!! FREEd before\n");
 		return ;
@@ -81,9 +84,11 @@ void print_dynamic_buffer(dynamic_buffer *db){
 		ERROR("DB->BUF NULL\n");
 		return ;
 	}
-	PRINT("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	PRINT("PRINT Dynamic Buffer %ld\n%s" ,db->current,db->buf);
-	PRINT("-----------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+#ifdef DEBUG
+	helper(30, '-');printf("\n");
+	PRINT("PRINT Dynamic Buffer, size: %ld:\n%s\n" ,db->current,db->buf);
+	helper(30, '-');printf("\n");
+#endif
 }
 
 void reset_dynamic_buffer(dynamic_buffer *db){

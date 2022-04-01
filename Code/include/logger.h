@@ -9,6 +9,7 @@
 *
 *****************************************************************/
 
+#include <netinet/in.h>
 #include<string.h>
 #include<stdio.h>
 #include<stdlib.h>
@@ -18,6 +19,8 @@
 #include<arpa/inet.h>
 #include"util.h"
 
-void ErrorLog(char *, struct sockaddr_in);
-void AccessLog(char*,struct sockaddr_in,char*, int);
-
+void ErrorLog(char *, struct sockaddr_in, int);
+void AccessLog(char*,struct sockaddr_in,char*, int, int);
+void LeaveLog(struct sockaddr_in, int);
+void AcceptLog(struct sockaddr_in,  int);
+void HeadLog(struct sockaddr_in);

@@ -20,6 +20,7 @@ char *colon = ":";
 char *server_info = "liso/1.0";
 char *default_path = "./static_site";
 
+int current_clinet_fd = 0;
 /**
  * @brief 
  * 	--> Handle Requests 
@@ -34,6 +35,7 @@ char *default_path = "./static_site";
  * 	--> 	CLOSE		: Not important
  */
 int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
+	current_clinet_fd = client_sock;
 	Request *request = parse(dbuf->buf, dbuf->current, client_sock);
 
 	// 400 Error Parsing
@@ -147,7 +149,7 @@ void handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 #endif
 	set_msg(dbuf, dfbuf->buf, dfbuf->current);
 	//set_msg(dbuf, crlf);
-	AccessLog("OK", cli_addr, "GET", 200);
+	AccessLog("OK", cli_addr, "GET", 200, current_clinet_fd);
 	return ;
 }
  
@@ -202,13 +204,13 @@ void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 		set_header(dbuf, "Connection", "keep-alive");
 	}
 	set_msg(dbuf, crlf, strlen(crlf));
-	AccessLog("OK", cli_addr, "HEAD", 200);
+	AccessLog("OK", cli_addr, "HEAD", 200, current_clinet_fd);
 	return ;
 }
 
 void handle_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
 	/* Post: Just Echo back */
-	AccessLog("Echo Back", cli_addr,"POST", 200);
+	AccessLog("Echo Back", cli_addr,"POST", 200, current_clinet_fd);
 	return ;
 }
 
@@ -218,7 +220,7 @@ void handle_400(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	set_response(dbuf, "400", "Bad request");
 	//set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
-	ErrorLog("400 Bad request", cli_addr);
+	ErrorLog("400 Bad request", cli_addr, current_clinet_fd);
 }
 
 void handle_404(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
@@ -226,7 +228,7 @@ void handle_404(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	set_response(dbuf, "404", "Not Found");
 	//set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
-	ErrorLog("404 Not Found", cli_addr);
+	ErrorLog("404 Not Found", cli_addr, current_clinet_fd);
 }
 
 void handle_501(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
@@ -234,7 +236,7 @@ void handle_501(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	set_response(dbuf, "501", "Not Implemented");
 	//set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
-	ErrorLog("501 Not Implemented", cli_addr);
+	ErrorLog("501 Not Implemented", cli_addr, current_clinet_fd);
 }
 
 void handle_505(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
@@ -242,7 +244,7 @@ void handle_505(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	set_response(dbuf, "505", "HTTP Version not supported");
 	//set_header(dbuf, "Connection", "Close");
 	set_msg(dbuf, crlf, strlen(crlf));
-	ErrorLog("505 HTTP Version not supported", cli_addr);
+	ErrorLog("505 HTTP Version not supported", cli_addr, current_clinet_fd);
 }
 
 // utility: get header value
@@ -345,6 +347,9 @@ TYPE get_file_type(char * path, char *result){
 		case GIF:
 			strcpy(result, "image/gif");
 			return GIF;
+		case ICO:
+			strcpy(result, "image/ico");
+			return ICO;
 		default:
 			strcpy(result, "application/octet-stream");
 			return NONE;
@@ -362,6 +367,8 @@ TYPE get_TYPE(char *extension){
 		return JPEG;
 	}else if(!strcmp(extension, "gif") || !strcmp(extension, "image/gif")){
 		return GIF;
+	}else if(!strcmp(extension, "ico") || !strcmp(extension, "image/ico")){
+		return ICO;
 	}else{
 		return NONE;
 	}

@@ -1,5 +1,5 @@
 #include "parse.h"
-#define DEBUG
+// #define DEBUG
 /**
  * @brief 
  *	deal with parsing messages

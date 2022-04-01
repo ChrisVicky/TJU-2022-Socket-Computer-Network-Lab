@@ -16,7 +16,7 @@
 #include <time.h>
 #include <stdio.h>
 #define DEFAULT_CAPACITY 1024
-
+// #define DEBUG
 typedef struct dynamic_buffer{
 	char *buf;
 	size_t capacity;
