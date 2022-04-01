@@ -10,10 +10,12 @@
 
 
 #include "buffer.h"
+#include <cstring>
 void init_dynamic_buffer(dynamic_buffer * db){
 	db->buf = (char *) malloc(sizeof(char) * DEFAULT_CAPACITY);
 	db->capacity = DEFAULT_CAPACITY;
 	db->current = 0;
+	db->access_end = 0;
 	memset(db->buf, 0, DEFAULT_CAPACITY);
 }
 
@@ -103,4 +105,17 @@ void update_dynamic_buffer(dynamic_buffer *db, char *front){
 	init_dynamic_buffer(db);
 	append_dynamic_buffer(db, tmp->buf, tmp->current);
 	free_dynamic_buffer(tmp);
+}
+
+/**
+ * @brief From L to R, Copy msg
+ *
+ * @param dest
+ * @param src
+ * @param l
+ * @param r [l,r)
+ */
+void catpart_dynamic_buffer(dynamic_buffer *dest, dynamic_buffer *src, int l, int len){
+	add_dynamic_buffer(dest, len);
+	strncpy(dest->buf, str->buf+l, len);
 }

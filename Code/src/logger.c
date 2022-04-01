@@ -39,17 +39,23 @@ void AccessLog(char *msg, struct sockaddr_in cli_addr,char *method, int code, in
 
 void LeaveLog(struct sockaddr_in cli_addr, int fd){
    time_t now; time(&now); char *Time=ctime(&now); Time[strlen(Time)-1] = '\0';
-  	LEAVELOG("[%s] [Departure] [Client ip%12s:%-7d] [client fd %d] Leaving, Cleaning it out\n" ,Time, inet_ntoa(cli_addr.sin_addr), (int) ntohs(cli_addr.sin_port),fd);
+  	LEAVELOG("[%s] [Departure] [Client ip %s:%-7d] [client fd %d] Leaving, Cleaning it out\n" ,Time, inet_ntoa(cli_addr.sin_addr), (int) ntohs(cli_addr.sin_port),fd);
 }
 
 void AcceptLog(struct sockaddr_in cli_addr, int fd){
    time_t now; time(&now); char *Time=ctime(&now); Time[strlen(Time)-1] = '\0';
-  	ARRIVALLOG("[%s] [Arrival] [Client ip%12s:%-7d] [client fd %d] Welcome new Client at fd %d\n" ,Time, inet_ntoa(cli_addr.sin_addr), (int) ntohs(cli_addr.sin_port),fd,fd);
+  	ARRIVALLOG("[%s] [Arrival] [Client ip %s:%-7d] [client fd %d] Welcome new Client at fd %d\n" ,Time, inet_ntoa(cli_addr.sin_addr), (int) ntohs(cli_addr.sin_port),fd,fd);
 }
 
 void HeadLog(struct sockaddr_in myaddr){
 	time_t now; time(&now); char *Time=ctime(&now); Time[strlen(Time)-1] = '\0';
   	PRINT4("[%s] [Head] START LISTENING AT %s:%-d\n" ,Time, inet_ntoa(myaddr.sin_addr), (int) ntohs(myaddr.sin_port));
+
+}
+
+void DealLog(struct sockaddr_in cli_addr, int fd, char *msg){
+	time_t now; time(&now); char *Time=ctime(&now); Time[strlen(Time)-1] = '\0';
+  	PRINT("[%s] [Deal] [Client ip %s:%-7d] [client fd %d] %s\n" ,Time, inet_ntoa(cli_addr.sin_addr), (int) ntohs(cli_addr.sin_port), fd, msg);
 
 }
 

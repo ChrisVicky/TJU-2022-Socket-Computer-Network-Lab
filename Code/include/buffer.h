@@ -20,7 +20,8 @@
 typedef struct dynamic_buffer{
 	char *buf;
 	size_t capacity;
-	size_t current;
+	size_t current; // current end
+	size_t access_end; // The end of current access_end --> in parse
 }dynamic_buffer;
 
 void init_dynamic_buffer(dynamic_buffer *);
@@ -32,5 +33,7 @@ void add_dynamic_buffer(dynamic_buffer*, size_t);
 void print_dynamic_buffer(dynamic_buffer*);
 void reset_dynamic_buffer(dynamic_buffer*);
 void update_dynamic_buffer(dynamic_buffer*, char*);
+void catpart_dynamic_buffer(dynamic_buffer*, dynamic_buffer*, int, int);
+
 
 #endif

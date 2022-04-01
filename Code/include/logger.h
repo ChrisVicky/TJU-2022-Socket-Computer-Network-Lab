@@ -24,3 +24,5 @@ void AccessLog(char*,struct sockaddr_in,char*, int, int);
 void LeaveLog(struct sockaddr_in, int);
 void AcceptLog(struct sockaddr_in,  int);
 void HeadLog(struct sockaddr_in);
+void DealLog(struct sockaddr_in, int, char*);
+

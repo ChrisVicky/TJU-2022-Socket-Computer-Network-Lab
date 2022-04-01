@@ -32,7 +32,7 @@
 #define ECHO_PORT 9999
 #define BUF_SIZE 1024
 // #define BUF_SIZE 1
-//#define DEBUG
+#define DEBUG
 
 char * dest = "\r\n\r\n";
 int CNT_NOW = 0;
@@ -70,18 +70,20 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 	init_dynamic_buffer(return_buffer);
 	while((t=strstr(temp,dest))!=NULL){
 		int len = t - temp;
-#ifdef DEBUG
-		PRINT("============================CURRENT CNT: %d=========================\n",++CNT_NOW);
+#ifdef debug
+		print("============================current cnt: %d=========================\n",++cnt_now);
 #endif
 		dynamic_buffer * each = (dynamic_buffer *)malloc(sizeof(dynamic_buffer));
 		init_dynamic_buffer(each);
 		append_dynamic_buffer(each, temp, len);
 		append_dynamic_buffer(each, dest, strlen(dest));
-		temp = t + strlen(dest);
+		// Update Access end --> The end of a caption
+		dbuf->access_end += each->current;
+
 #ifdef DEBUG
-		LOG("Starting dealing with msg\n----------\n%ld\n---------\n" ,each->current);
+		LOG("Starting dealing with msg\n----------\n%s\n---------\n" ,each->buf);
 #endif
-		Return_value result = handle_request(client_sock, sock, each, cli_addr);	
+		Return_value result = handle_request(client_sock, sock, each, cli_addr, dbuf);	
 		append_dynamic_buffer(return_buffer, each->buf, each->current);
 #ifdef DEBUG
 		LOG("MSG Appended\n");
@@ -89,6 +91,7 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 		if(result==CLOSE)
 			return CLOSE;
 		free_dynamic_buffer(each);
+		temp = dbuf->buf + dbuf->access_end;
 	}
 	update_dynamic_buffer(dbuf, temp);
 #ifdef DEBUG
@@ -172,32 +175,19 @@ int main(int argc, char* argv[])
 		fd_set tmp_fds = tot_fds;
 //		HeadLog(addr);
 		PRINTHEAD(ECHO_PORT);
-#ifdef DEBUG
-		LOG("Start Listening at port %d\n" ,ECHO_PORT);
-#endif
 		int cnt, fd;
 		if((cnt = select(MAX_FD_SIZE+1, &tmp_fds, NULL, NULL, NULL)) < 1){
 			ERRORLOG("Select < 1, No Clients");
 			return EXIT_FAILURE;
 		}
-#ifdef DEBUG
-		LOG("After Selecting! cnt : %d\n" ,cnt);
-#endif
 		for(fd = 0; fd< MAX_FD_SIZE;fd++){
 			if(!FD_ISSET(fd, &tmp_fds)){
-#ifdef DEBUG
-				//LOG("fd %d Not in SET\n" ,fd);
-#endif
-				// Not in the set;
 				continue;
 			}
 #ifdef DEBUG
 			LOG("cnt : %d\n" ,cnt);
 #endif
 			if(!cnt--){
-#ifdef DEBUG
-				LOG("CNT USED UP --> cnt %d, Break\n" ,cnt);
-#endif 
 				break;
 			}
 			if(fd == sock){
@@ -215,19 +205,16 @@ int main(int argc, char* argv[])
 				FD_SET(client_sock, &tot_fds);
 				init_dynamic_buffer(ADBUF[client_sock]);
 				AcceptLog(cli_addr[client_sock], client_sock);
-#ifdef DEBUG
-				LOG("Accepting Connection FROM %d, client_sock %d\n" ,fd, client_sock);
-#endif
 			}else{
 				/* Have Connected */
 				memset(buf, 0, sizeof(buf));
 				if((readret=recv(fd, buf, BUF_SIZE,0))>=1){
+					DealLog(cli_addr[fd], fd, "Msg RECV");
 #ifdef DEBUG
-					LOG("STARTING RECV MSG FROM %d\n" ,fd);
+					LOG("MSG RECVED:\n%s\n" ,buf);
 #endif
 					append_dynamic_buffer(ADBUF[fd], buf, readret);
 					if(deal_buf(ADBUF[fd], readret, fd, sock, cli_addr[client_sock])!=PERSISTENT){
-						// TODO: cli_addr is not updated --> It's not the right one;
 						break;
 					}
 				}else if(!readret){
@@ -236,15 +223,10 @@ int main(int argc, char* argv[])
 					close_socket(fd);
 					FD_CLR(fd, &tot_fds);
 					LeaveLog(cli_addr[client_sock], client_sock);
-#ifdef DEBUG
-					LOG("Close Client on FD %d\n" ,fd);
-#endif
 				}else{
 					close_socket(fd);
-#ifdef DEBUG
 					ERROR("Readret < 0!\n");
 					break;
-#endif
 				}
 			}
 
@@ -252,6 +234,5 @@ int main(int argc, char* argv[])
 	}
 	for(i=0;i<MAX_FD_SIZE;i++) free_dynamic_buffer(ADBUF[i]);
 	close_socket(sock);
-
 	return EXIT_SUCCESS;
 }

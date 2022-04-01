@@ -49,12 +49,12 @@ typedef enum TYPE{
 	NONE
 }TYPE;
 
-int handle_request(int, int, dynamic_buffer*, struct sockaddr_in);
+int handle_request(int, int, dynamic_buffer*, struct sockaddr_in, dynamic_buffer*);
 void helper_head(Request*, dynamic_buffer*, struct sockaddr_in);
 
 void handle_get(Request*, dynamic_buffer*, struct sockaddr_in, int);
 void handle_head(Request*, dynamic_buffer*, struct sockaddr_in, int);
-void handle_post(Request*, dynamic_buffer*, struct sockaddr_in, int);
+void handle_post(Request*, dynamic_buffer*, struct sockaddr_in, int, dynamic_buffer*);
 
 void handle_400(dynamic_buffer*, struct sockaddr_in);
 void handle_404(dynamic_buffer*, struct sockaddr_in);
@@ -75,4 +75,5 @@ void get_time(char*,size_t);
 void get_last_modified(struct stat, char*, size_t);
 int get_file_content(dynamic_buffer*, char*);
 TYPE get_file_type(char*, char*);
+
 

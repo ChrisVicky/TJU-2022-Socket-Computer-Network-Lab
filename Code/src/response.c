@@ -34,7 +34,7 @@ int current_clinet_fd = 0;
  * 	-->	PERSISTENT	: ..
  * 	--> 	CLOSE		: Not important
  */
-int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
+int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, dynamic_buffer *odbuf){
 	current_clinet_fd = client_sock;
 	Request *request = parse(dbuf->buf, dbuf->current, client_sock);
 
@@ -70,7 +70,7 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 			handle_head(request, dbuf, cli_addr, return_value);
 			break;
 		case POST:
-			handle_post(request, dbuf, cli_addr, return_value);
+			handle_post(request, dbuf, cli_addr, return_value, odbuf);
 			break;
 		default:
 			handle_501(dbuf, cli_addr);
@@ -208,7 +208,27 @@ void handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 	return ;
 }
 
-void handle_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
+void handle_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value, dynamic_buffer *odbuf){
+	/**
+	 * 1. Check uri
+	 * /
+
+
+	// Get Paras from Request;
+	char *ch_length = get_header_value(request, "Content-Length");
+	if(ch_length==NULL){
+		ErrorLog("No attribute Content-Length, Parsing Failed", cli_addr, 400);
+		handle_400(dbuf, cli_addr);
+		return;
+	}
+	int content_length = atoi(get_header_value(request, "Content-Length"));
+	dynamic_buffer *paras = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
+	init_dynamic_buffer(paras);
+	catpart_dynamic_buffer(paras, odbuf, odbuf->access_end, content_length);
+	// Update Global Buffer Access_end;
+	odbuf->access_end += content_length;
+
+
 	/* Post: Just Echo back */
 	AccessLog("Echo Back", cli_addr,"POST", 200, current_clinet_fd);
 	return ;
