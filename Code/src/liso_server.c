@@ -88,18 +88,12 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 #endif
 		Return_value result = handle_request(client_sock, sock, each, cli_addr, dbuf);	
 		append_dynamic_buffer(return_buffer, each->buf, each->current);
-#ifdef DEBUG
-		LOG("MSG Appended\n");
-#endif
-		if(result==CLOSE)
-			return CLOSE;
+		if(result==CLOSE) return CLOSE;
 		free_dynamic_buffer(each);
 		temp = dbuf->buf + dbuf->access_end;
 	}
 	update_dynamic_buffer(dbuf, temp);
-#ifdef DEBUG
-	LOG("msg to be sent\n======================= Sending ======================\n%s\n" ,return_buffer->buf);
-#endif
+
 	if(!return_buffer->current){
 #ifdef DEBUG
 		LOG("Not complete\n");
@@ -107,6 +101,9 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 		free_dynamic_buffer(return_buffer);
 		return PERSISTENT;
 	}
+#ifdef DEBUG
+	LOG("msg to be sent\n======================= Sending ======================\n%s\n" ,return_buffer->buf);
+#endif
 	if (send(client_sock, return_buffer->buf, return_buffer->current, 0) != return_buffer->current)
 	{
 		close_socket(client_sock);

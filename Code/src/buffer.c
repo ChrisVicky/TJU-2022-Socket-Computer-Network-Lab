@@ -85,11 +85,9 @@ void print_dynamic_buffer(dynamic_buffer *db){
 		ERROR("DB->BUF NULL\n");
 		return ;
 	}
-#ifdef DEBUG
 	helper(30, '-');printf("\n");
 	PRINT("PRINT Dynamic Buffer, size: %ld:\n%s\n" ,db->current,db->buf);
 	helper(30, '-');printf("\n");
-#endif
 }
 
 void reset_dynamic_buffer(dynamic_buffer *db){
