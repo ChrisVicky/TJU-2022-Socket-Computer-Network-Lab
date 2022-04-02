@@ -75,11 +75,9 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 	dynamic_buffer * each = (dynamic_buffer *)malloc(sizeof(dynamic_buffer));
 	init_dynamic_buffer(each);
 
+	LOG("After Init,begin while\n");
 	while((t=strstr(dbuf->buf,dest))!=NULL){
 		int len = t - dbuf->buf;
-#ifdef debug
-		print("============================current cnt: %d=========================\n",++cnt_now);
-#endif
 		memset_dynamic_buffer(each);
 		append_dynamic_buffer(each, dbuf->buf, len);
 		append_dynamic_buffer(each, dest, strlen(dest));
@@ -219,7 +217,7 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
 					LOG("MSG RECVED:\n%s\n" ,buf);
 #endif
-					append_dynamic_buffer(ADBUF[fd], buf, readret);
+					append_dynamic_buffer(ADBUF[fd], buf, strlen(buf)-1);
 					printf("FD --> ADBUF\n");
 					print_dynamic_buffer(ADBUF[fd]);
 					Return_value ret = deal_buf(ADBUF[fd], readret, fd, sock, cli_addr[client_sock]);

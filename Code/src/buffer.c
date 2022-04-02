@@ -7,15 +7,15 @@
 *   描    述：动态缓冲区具体实现
 *
 *****************************************************************/
-
+#define DEBUG
 
 #include "buffer.h"
 void init_dynamic_buffer(dynamic_buffer * db){
-	db->buf = (char *) malloc(sizeof(char) * DEFAULT_CAPACITY);
+	db->buf = (char *) malloc(DEFAULT_CAPACITY);
 	db->capacity = DEFAULT_CAPACITY;
 	db->current = 0;
 	db->access_end = 0;
-	memset(db->buf, 0, DEFAULT_CAPACITY);
+	memset(db->buf, 0, DEFAULT_CAPACITY*sizeof(char));
 }
 
 void memset_dynamic_buffer(dynamic_buffer * db){
@@ -53,28 +53,27 @@ void free_dynamic_buffer(dynamic_buffer * db){
 }
 
 void append_dynamic_buffer(dynamic_buffer * db, char * buf, size_t len){
+//	PRINT4("GGGGGGGG\n");
+//	PRINT4("Cureent Len: %ld vs %ld\n" ,db->capacity,db->current+len);
 	add_dynamic_buffer(db, len);
-	strcpy(db->buf + db->current, buf);
+	strncpy(db->buf + db->current, buf, len);
 	db->current += len;
+//	print_dynamic_buffer(db);
 }
 
 void add_dynamic_buffer(dynamic_buffer *db, size_t len){
-/*	if(db->current + len > db->capacity){
+	if(db->current + len > db->capacity){
 		int req_len = db->current + len;
 		int cap = db->capacity;
 		while(req_len > cap) cap += DEFAULT_CAPACITY;
+		PRINT4("from %ld --> %ld, Strlen:%ld\n" ,db->capacity, cap, strlen(db->buf));
 		db->buf = (char *) realloc(db->buf, cap);
-		memset(db->buf+db->capacity, 0, (cap-db->capacity-1)*sizeof(char));
+		memset(db->buf+db->capacity, 0, cap-db->capacity);
 		db->capacity = cap;
 	}
-*/
-	if(db->current + len > db->capacity){
-		db->buf = (char *)realloc(db->buf, len + db->current + 1);
-		memset(db->buf+db->current, 0, (sizeof(char))*len);
-		db->capacity = len + db->current + 1;
-	}
-	PRINT4("!!!!!!!!!!!!!!!!!!\n");
-	print_dynamic_buffer(db);
+
+//	PRINT4("!!!!!!!!!!!!!!!!!!\n");
+//	print_dynamic_buffer(db);
 }
 
 void print_dynamic_buffer(dynamic_buffer *db){
