@@ -217,7 +217,10 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
 					LOG("MSG RECVED:\n%s\n" ,buf);
 #endif
-					append_dynamic_buffer(ADBUF[fd], buf, strlen(buf)-1);
+					//TODO: CHECK WHETHER THIS is Correct
+					//Why????
+				//	append_dynamic_buffer(ADBUF[fd], buf, strlen(buf)-2);
+					append_dynamic_buffer(ADBUF[fd], buf, strlen(buf));
 					printf("FD --> ADBUF\n");
 					print_dynamic_buffer(ADBUF[fd]);
 					Return_value ret = deal_buf(ADBUF[fd], readret, fd, sock, cli_addr[client_sock]);

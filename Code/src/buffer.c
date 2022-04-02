@@ -86,7 +86,7 @@ void print_dynamic_buffer(dynamic_buffer *db){
 		return ;
 	}
 	helper(30, '-');printf("\n");
-	PRINT("PRINT Dynamic Buffer, size: %ld:\n%s\n" ,db->current,db->buf);
+	PRINT("PRINT Dynamic Buffer, size: %ld:\n>>%s<<\n" ,db->current,db->buf);
 	helper(30, '-');printf("\n");
 }
 
@@ -106,7 +106,7 @@ void update_dynamic_buffer(dynamic_buffer *db){
 	print_dynamic_buffer(db);
 	strcpy(db->buf, db->buf+db->access_end);
 	db->current -= db->access_end;
-	db->capacity -= db->access_end;
+//	db->capacity -= db->access_end;
 	db->access_end = 0;
 	LOG("END Updating\n");
 	print_dynamic_buffer(db);
