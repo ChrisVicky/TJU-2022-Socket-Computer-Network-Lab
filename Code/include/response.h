@@ -79,4 +79,14 @@ void get_last_modified(struct stat, char*, size_t);
 int get_file_content(dynamic_buffer*, char*);
 TYPE get_file_type(char*, char*);
 
+/***********************  CGI ISSUE  *****************************/
+
+#define FILENAME "FileName"
+/* note: null terminated arrays (null pointer) */
+
+int handle_cgi_get(Request*, dynamic_buffer*, struct sockaddr_in,  dynamic_buffer*, int);
+int handle_cgi_post(Request*, dynamic_buffer*, struct sockaddr_in,  dynamic_buffer*);
+
+char *get_header_value(Request*, char*);
+
 

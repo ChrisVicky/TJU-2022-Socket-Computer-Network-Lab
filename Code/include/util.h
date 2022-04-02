@@ -11,6 +11,7 @@
 //#define SUCCESS(format, ...) printf("\33[1;33m" format "\33[0m",## __VA_ARGS__)
 #include<stdio.h>
 #include<string.h>
+#include "parse.h"
 #define ERROR(format, ...) \
 	do {\
 	time_t now; time(&now); char *Time=ctime(&now); Time[strlen(Time)-1]='\0';\

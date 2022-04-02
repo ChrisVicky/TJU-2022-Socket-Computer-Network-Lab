@@ -21,6 +21,7 @@ char *server_info = "liso/1.0";
 char *default_path = "./static_site";
 
 int current_clinet_fd = 0;
+
 /**
  * @brief 
  * 	--> Handle Requests 
@@ -72,8 +73,6 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 	// TODO: 
 	// 	Check Whether it is Completely Received
 
-
-
 	// Methods, 501 Method not supported.
 	METHODS this_method = method_switch(request->http_method);
 	if(this_method==NOT_SUPPORTED){
@@ -81,6 +80,20 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 		free_request(request);
 		return CLOSE;
 	}
+
+	// Check whether body part is completely received;
+	char *body_length_str = get_header_value(request, "Content-Length");
+	if(body_length_str==NULL){
+		//No body;
+	}else{
+		int body_length = atoi(body_length_str);
+		if(body_length + odbuf->access_end > odbuf->current){
+			// Means Body is not completely received;
+			return NOT_COMPLETE;
+		}
+	}
+	
+
 	// Check cgi?
 	char *cgi_prefix = "/cgi/";
 	char prefix[10] = {0};
@@ -104,6 +117,13 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 		}
 	}else{
 		LOG("CGI !!\n");
+		switch(this_method){
+			case GET:
+				break;
+			default:
+				break;
+
+		}
 		// CGI HERE!
 	}
 	return PERSISTENT;
@@ -234,6 +254,7 @@ int handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	}
 	set_msg(dbuf, crlf, strlen(crlf));
 	AccessLog("OK", cli_addr, "HEAD", 200, current_clinet_fd);
+	free_dynamic_buffer(uri_dbuf);
 	return PERSISTENT;
 }
 
@@ -258,7 +279,8 @@ void handle_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 	odbuf->access_end += content_length;
 
 
-	/* Post: Just Echo back */
+	// Post: Just Echo back 
+	*/
 	AccessLog("Echo Back", cli_addr,"POST", 200, current_clinet_fd);
 	return ;
 }
@@ -323,6 +345,13 @@ void free_request(Request * request){
 }
 
 
+/**
+ * @brief Set response --> Code and Description
+ *
+ * @param dbuf
+ * @param code
+ * @param description
+ */
 // Set Response, Header, msg
 void set_response(dynamic_buffer *dbuf, char *code, char *description){
 	append_dynamic_buffer(dbuf, my_http_version, strlen(my_http_version));
@@ -334,6 +363,14 @@ void set_response(dynamic_buffer *dbuf, char *code, char *description){
 	return ;
 }
 
+
+/**
+ * @brief Set Header with Key: Value
+ *
+ * @param dbuf
+ * @param key
+ * @param value
+ */
 void set_header(dynamic_buffer *dbuf, char *key, char *value){
 	append_dynamic_buffer(dbuf, key, strlen(key));
 	append_dynamic_buffer(dbuf, colon, strlen(colon));
@@ -343,6 +380,13 @@ void set_header(dynamic_buffer *dbuf, char *key, char *value){
 	return ;
 }
 
+/**
+ * @brief Set Msg, usually an external \r\n or body part
+ *
+ * @param dbuf
+ * @param msg
+ * @param len
+ */
 void set_msg(dynamic_buffer *dbuf, char* msg, int len){
 	append_dynamic_buffer(dbuf, msg, len);
 }
@@ -465,6 +509,65 @@ int get_file_content(dynamic_buffer * dfbuf, char*path){
 	append_dynamic_buffer(dfbuf, file, file_len);
 	close(fd_in);
 	return 0;
+
+}
+char* ARGV[] = {
+FILENAME,
+NULL
+};
+
+char* ENVP[] = {
+"CONTENT_LENGTH=",
+"CONTENT-TYPE=",
+"GATEWAY_INTERFACE=CGI/1.1",
+"QUERY_STRING=action=opensearch&search=HT&namespace=0&suggest=",
+"REMOTE_ADDR=128.2.215.22",
+"REMOTE_HOST=gs9671.sp.cs.cmu.edu",
+"REQUEST_METHOD=GET",
+"SCRIPT_NAME=/w/api.php",
+"HOST_NAME=en.wikipedia.org",
+"SERVER_PORT=80",
+"SERVER_PROTOCOL=HTTP/1.1",
+"SERVER_SOFTWARE=Liso/1.0",
+"HTTP_ACCEPT=application/json, text/javascript, */*; q=0.01",
+"HTTP_REFERER=http://en.wikipedia.org/w/index.php?title=Special%3ASearch&search=test+wikipedia+search",
+"HTTP_ACCEPT_ENCODING=gzip,deflate,sdch",
+"HTTP_ACCEPT_LANGUAGE=en-US,en;q=0.8",
+"HTTP_ACCEPT_CHARSET=ISO-8859-1,utf-8;q=0.7,*;q=0.3",
+"HTTP_COOKIE=clicktracking-session=v7JnLVqLFpy3bs5hVDdg4Man4F096mQmY; mediaWiki.user.bucket%3Aext.articleFeedback-tracking=8%3Aignore; mediaWiki.user.bucket%3Aext.articleFeedback-options=8%3Ashow; mediaWiki.user.bucket:ext.articleFeedback-tracking=8%3Aignore; mediaWiki.user.bucket:ext.articleFeedback-options=8%3Ashow",
+"HTTP_USER_AGENT=Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.186 Safari/535.1",
+"HTTP_CONNECTION=keep-alive",
+"HTTP_HOST=en.wikipedia.org",
+NULL
+};
+
+
+/**
+ * @brief Handle CGI requests
+ *
+ * @param request 	: Request
+ * @param dbuf		: return buffer
+ * @param cli_addr	: client's addr
+ * @param odbuf		: Request buffer
+ *
+ * @return 		: Return_value
+ */
+int handle_cgi_get(Request* request, dynamic_buffer* dbuf, struct sockaddr_in cli_addr, dynamic_buffer* odbuf, int content_length){
+	// Get paras from odbuf.
+	dynamic_buffer *paras = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
+	init_dynamic_buffer(paras);
+	catpart_dynamic_buffer(paras, odbuf, odbuf->access_end, content_length);
+	
+	// Update Global Buffer Access_end;
+	odbuf->access_end += content_length;
+	
+	// Set ENVP
+	strcat(ENVP[0], get_header_value(request, "Content-Length"));
+	strcat(ENVP[1], get_header_value(request, "Content-Type"));
+
+
+	return 0;
+
 
 }
 

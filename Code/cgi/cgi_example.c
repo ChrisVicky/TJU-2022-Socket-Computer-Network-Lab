@@ -216,7 +216,7 @@ int main(int argc, char * argv[])
         while((readret = read(stdout_pipe[0], buf, BUF_SIZE-1)) > 0)
         {
             buf[readret] = '\0'; /* nul-terminate string */
-            fprintf(stdout, "Got from CGI: %s\n", buf);
+            fprintf(stdout, "Got from CGI: BEGIN BUF<<%s>>END OF BUF\n", buf);
         }
 
         close(stdout_pipe[0]);

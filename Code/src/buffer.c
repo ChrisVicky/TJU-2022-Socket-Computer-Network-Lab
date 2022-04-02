@@ -53,14 +53,7 @@ void free_dynamic_buffer(dynamic_buffer * db){
 }
 
 void append_dynamic_buffer(dynamic_buffer * db, char * buf, size_t len){
-	if(db->current + len > db->capacity){
-		int req_len = db->current + len;
-		int cap = db->capacity;
-		while(req_len > cap) cap += DEFAULT_CAPACITY;
-		db->buf = (char *) realloc(db->buf, cap);
-		db->capacity = cap;
-		memset(db->buf+db->current, 0, len);
-	}
+	add_dynamic_buffer(db, len);
 	memcpy(db->buf+db->current, buf, len);
 	db->current += len;
 }
@@ -71,8 +64,8 @@ void add_dynamic_buffer(dynamic_buffer *db, size_t len){
 		int cap = db->capacity;
 		while(req_len > cap) cap += DEFAULT_CAPACITY;
 		db->buf = (char *) realloc(db->buf, cap);
+		memset(db->buf+db->capacity, 0, (cap-db->capacity+1)*sizeof(char));
 		db->capacity = cap;
-		memset(db->buf+db->current, 0, len);
 	}
 }
 
@@ -126,7 +119,7 @@ void update_dynamic_buffer(dynamic_buffer *db){
  * @param dest
  * @param src
  * @param l
- * @param r [l,r)
+ * @param len [l,l+len] (use strncpy)
  */
 void catpart_dynamic_buffer(dynamic_buffer *dest, dynamic_buffer *src, int l, int len){
 	add_dynamic_buffer(dest, len);
