@@ -220,6 +220,8 @@ int main(int argc, char* argv[])
 					LOG("MSG RECVED:\n%s\n" ,buf);
 #endif
 					append_dynamic_buffer(ADBUF[fd], buf, readret);
+					printf("FD --> ADBUF\n");
+					print_dynamic_buffer(ADBUF[fd]);
 					Return_value ret = deal_buf(ADBUF[fd], readret, fd, sock, cli_addr[client_sock]);
 				
 					switch(ret){

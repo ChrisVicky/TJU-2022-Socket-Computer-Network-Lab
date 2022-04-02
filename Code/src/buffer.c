@@ -54,19 +54,27 @@ void free_dynamic_buffer(dynamic_buffer * db){
 
 void append_dynamic_buffer(dynamic_buffer * db, char * buf, size_t len){
 	add_dynamic_buffer(db, len);
-	memcpy(db->buf+db->current, buf, len);
+	strcpy(db->buf + db->current, buf);
 	db->current += len;
 }
 
 void add_dynamic_buffer(dynamic_buffer *db, size_t len){
-	if(db->current + len > db->capacity){
+/*	if(db->current + len > db->capacity){
 		int req_len = db->current + len;
 		int cap = db->capacity;
 		while(req_len > cap) cap += DEFAULT_CAPACITY;
 		db->buf = (char *) realloc(db->buf, cap);
-		memset(db->buf+db->capacity, 0, (cap-db->capacity+1)*sizeof(char));
+		memset(db->buf+db->capacity, 0, (cap-db->capacity-1)*sizeof(char));
 		db->capacity = cap;
 	}
+*/
+	if(db->current + len > db->capacity){
+		db->buf = (char *)realloc(db->buf, len + db->current + 1);
+		memset(db->buf+db->current, 0, (sizeof(char))*len);
+		db->capacity = len + db->current + 1;
+	}
+	PRINT4("!!!!!!!!!!!!!!!!!!\n");
+	print_dynamic_buffer(db);
 }
 
 void print_dynamic_buffer(dynamic_buffer *db){
