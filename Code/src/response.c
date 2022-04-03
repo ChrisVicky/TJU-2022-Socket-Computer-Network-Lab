@@ -92,7 +92,7 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 			return NOT_COMPLETE;
 		}
 	}
-	
+
 
 	// Check cgi?
 	char *cgi_prefix = "/cgi/";
@@ -119,9 +119,20 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 		LOG("CGI !!\n");
 		switch(this_method){
 			case GET:
+				if(handle_cgi_get(request, dbuf, cli_addr, odbuf)){
+					handle_500(dbuf, cli_addr);
+					return CLOSE;
+				}
+				break;
+			case POST:
+				if(handle_cgi_post(request, dbuf, cli_addr, odbuf)){
+					handle_500(dbuf, cli_addr);
+					return CLOSE;
+				}
 				break;
 			default:
-				break;
+				handle_501(dbuf, cli_addr);
+				return CLOSE;
 
 		}
 		// CGI HERE!
@@ -164,8 +175,8 @@ int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_ad
 	get_last_modified(file_buffer, last_modified, BUF_SIZE);
 	char content_length[BUF_SIZE]={0};
 	sprintf(content_length, "%ld", file_buffer.st_size);
-	char content_type[BUF_SIZE] = {0};
-	get_file_type(uri_dbuf->buf, content_type);
+	//char content_type[BUF_SIZE] = {0};
+	char *content_type = get_file_type(uri_dbuf->buf);
 #undef BUF_SIZE	
 
 	reset_dynamic_buffer(dbuf);
@@ -236,8 +247,8 @@ int handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	get_last_modified(file_buffer, last_modified, BUF_SIZE);
 	char content_length[BUF_SIZE]={0};
 	sprintf(content_length, "%ld", file_buffer.st_size);
-	char content_type[BUF_SIZE] = {0};
-	get_file_type(uri_dbuf->buf, content_type);
+	//char content_type[BUF_SIZE] = {0};
+	char *content_type = get_file_type(uri_dbuf->buf);
 #undef BUF_SIZE
 
 	memset_dynamic_buffer(dbuf);
@@ -302,6 +313,13 @@ void handle_404(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	ErrorLog("404 Not Found", cli_addr, current_clinet_fd);
 }
 
+void handle_500(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
+	memset_dynamic_buffer(dbuf);
+	set_response(dbuf, "500", "Internal Server Error");
+	set_header(dbuf, "Connection", "Close");
+	set_msg(dbuf, crlf, strlen(crlf));
+	ErrorLog("500 Internal Server Error", cli_addr, current_clinet_fd);
+}
 void handle_501(dynamic_buffer *dbuf, struct sockaddr_in cli_addr){
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "501", "Not Implemented");
@@ -325,7 +343,7 @@ char *get_header_value(Request *request, char *header_name){
 		if(!strcmp(request->headers[i].header_name, header_name))
 			return request->headers[i].header_value;
 	}
-	return "";
+	return NULL;
 }
 
 // switch methods
@@ -406,7 +424,8 @@ void get_last_modified(struct stat file_buffer, char * last_modified, size_t BUF
 }
 
 // Get Type
-TYPE get_file_type(char * path, char *result){
+char* get_file_type(char * path){
+	char *result = (char*)malloc(sizeof(char*)*100);
 	size_t len = strlen(path);
 	int i;
 	char extension[100]={0};
@@ -419,7 +438,7 @@ TYPE get_file_type(char * path, char *result){
 	}
 	if(!strlen(extension)){
 		strcpy(result, "application/octet-stream");
-		return NONE;
+		return result;
 	}
 	for(i=0;extension[i];i++){
 		extension[i] = tolower(extension[i]);
@@ -427,25 +446,25 @@ TYPE get_file_type(char * path, char *result){
 	switch(get_TYPE(extension)){
 		case HTML:
 			strcpy(result, "text/html");
-			return HTML;
+			return result;
 		case CSS:
 			strcpy(result, "text/css");
-			return CSS;
+			return result;
 		case PNG:
 			strcpy(result, "image/png");
-			return PNG;
+			return result;
 		case JPEG:
 			strcpy(result, "image/jpeg");
-			return JPEG;
+			return result;
 		case GIF:
 			strcpy(result, "image/gif");
-			return GIF;
+			return result;
 		case ICO:
 			strcpy(result, "image/ico");
-			return ICO;
+			return result;
 		default:
 			strcpy(result, "application/octet-stream");
-			return NONE;
+			return result;
 	}
 }
 // Get File TYPE
@@ -511,36 +530,239 @@ int get_file_content(dynamic_buffer * dfbuf, char*path){
 	return 0;
 
 }
-char* ARGV[] = {
-FILENAME,
-NULL
-};
 
-char* ENVP[] = {
-"CONTENT_LENGTH=",
-"CONTENT-TYPE=",
-"GATEWAY_INTERFACE=CGI/1.1",
-"QUERY_STRING=action=opensearch&search=HT&namespace=0&suggest=",
-"REMOTE_ADDR=128.2.215.22",
-"REMOTE_HOST=gs9671.sp.cs.cmu.edu",
-"REQUEST_METHOD=GET",
-"SCRIPT_NAME=/w/api.php",
-"HOST_NAME=en.wikipedia.org",
-"SERVER_PORT=80",
-"SERVER_PROTOCOL=HTTP/1.1",
-"SERVER_SOFTWARE=Liso/1.0",
-"HTTP_ACCEPT=application/json, text/javascript, */*; q=0.01",
-"HTTP_REFERER=http://en.wikipedia.org/w/index.php?title=Special%3ASearch&search=test+wikipedia+search",
-"HTTP_ACCEPT_ENCODING=gzip,deflate,sdch",
-"HTTP_ACCEPT_LANGUAGE=en-US,en;q=0.8",
-"HTTP_ACCEPT_CHARSET=ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-"HTTP_COOKIE=clicktracking-session=v7JnLVqLFpy3bs5hVDdg4Man4F096mQmY; mediaWiki.user.bucket%3Aext.articleFeedback-tracking=8%3Aignore; mediaWiki.user.bucket%3Aext.articleFeedback-options=8%3Ashow; mediaWiki.user.bucket:ext.articleFeedback-tracking=8%3Aignore; mediaWiki.user.bucket:ext.articleFeedback-options=8%3Ashow",
-"HTTP_USER_AGENT=Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.186 Safari/535.1",
-"HTTP_CONNECTION=keep-alive",
-"HTTP_HOST=en.wikipedia.org",
-NULL
-};
 
+///////////////////////////////////////////////////////////////////////////////////////
+// Deal with CGI REQUESTS
+void execve_error_handler()
+{
+	switch (errno)
+	{
+		case E2BIG:
+			fprintf(stderr, "The total number of bytes in the environment \
+					(envp) and argument list (argv) is too large.\n");
+			return;
+		case EACCES:
+			fprintf(stderr, "Execute permission is denied for the file or a \
+					script or ELF interpreter.\n");
+			return;
+		case EFAULT:
+			fprintf(stderr, "filename points outside your accessible address \
+					space.\n");
+			return;
+		case EINVAL:
+			fprintf(stderr, "An ELF executable had more than one PT_INTERP \
+					segment (i.e., tried to name more than one \
+						interpreter).\n");
+			return;
+		case EIO:
+			fprintf(stderr, "An I/O error occurred.\n");
+			return;
+		case EISDIR:
+			fprintf(stderr, "An ELF interpreter was a directory.\n");
+			return;
+		case ELIBBAD:
+			fprintf(stderr, "An ELF interpreter was not in a recognised \
+					format.\n");
+			return;
+		case ELOOP:
+			fprintf(stderr, "Too many symbolic links were encountered in \
+					resolving filename or the name of a script \
+					or ELF interpreter.\n");
+			return;
+		case EMFILE:
+			fprintf(stderr, "The process has the maximum number of files \
+					open.\n");
+			return;
+		case ENAMETOOLONG:
+			fprintf(stderr, "filename is too long.\n");
+			return;
+		case ENFILE:
+			fprintf(stderr, "The system limit on the total number of open \
+					files has been reached.\n");
+			return;
+		case ENOENT:
+			fprintf(stderr, "The file filename or a script or ELF interpreter \
+					does not exist, or a shared library needed for \
+					file or interpreter cannot be found.\n");
+			return;
+		case ENOEXEC:
+			fprintf(stderr, "An executable is not in a recognised format, is \
+					for the wrong architecture, or has some other \
+					format error that means it cannot be \
+					executed.\n");
+			return;
+		case ENOMEM:
+			fprintf(stderr, "Insufficient kernel memory was available.\n");
+			return;
+		case ENOTDIR:
+			fprintf(stderr, "A component of the path prefix of filename or a \
+					script or ELF interpreter is not a directory.\n");
+			return;
+		case EPERM:
+			fprintf(stderr, "The file system is mounted nosuid, the user is \
+					not the superuser, and the file has an SUID or \
+					SGID bit set.\n");
+			return;
+		case ETXTBSY:
+			fprintf(stderr, "Executable was open for writing by one or more \
+					processes.\n");
+			return;
+		default:
+			fprintf(stderr, "Unkown error occurred with execve().\n");
+			return;
+	}
+}
+
+char *get_path_info(char *uri){
+	char *end = strstr(uri, "?");
+	if(end==NULL){
+		end = uri + strlen(uri);
+	}
+	char *temp = uri;
+	char *t;
+	while((t=strstr(temp, "/"))!=NULL){
+		char *w = strstr(t, "/");
+		if(w==NULL || w > end){
+			break;
+		}
+		temp = t;
+		// t: Last / before the end of uri.
+	}
+	char *ret = (char*) malloc(sizeof(char*)*(end - t));
+	strncpy(ret, t, end-t);
+	return ret;	
+}
+
+char *get_script_name(char *uri){
+	char *end = strstr(uri, "?");
+	if(end==NULL){
+		return uri;
+	}else{
+		char *temp = (char*) malloc(sizeof(char*) * (end-uri));
+		strncpy(temp, uri, end-uri);
+		temp[end-uri] = '\0';
+		return temp;
+	}
+
+}
+void set_EVNP(CGI_ARG* arg, Request* request, struct sockaddr_in cli_addr){
+	append_KV(arg, "CONTENT_LENGTH", get_header_value(request, "Content-Length"));
+	append_KV(arg, "CONTENT_TYPE", get_file_type(request->http_uri));
+	append_KV(arg, "GATEWAY_INTERFACE", "CGI/1.1");
+	//append_KV(arg, "PATH_INFO", get_path_info(request->http_uri));
+	// NULL MAY HAPPEN
+	if(method_switch(request->http_method)==GET)
+		append_KV(arg, "QUERY_STRING", strstr(request->http_uri, "?")+1);
+	append_KV(arg, "REMOTE_ADDR", inet_ntoa(cli_addr.sin_addr));
+	append_KV(arg, "REQUEST_METHOD", request->http_method);
+	append_KV(arg, "REQUEST_URI", request->http_uri);
+	append_KV(arg, "SCRIPT_NAME", get_script_name(request->http_uri));
+	append_KV(arg, "SERVER_PORT", "9999"); // This can be improved!!!!!
+	append_KV(arg, "SERVER_PROTOCOL", "HTTP/1.1");
+	append_KV(arg, "SERVER_SOFTWARE", "Liso/1.0");
+	append_KV(arg, "HTTP_ACCEPT", get_header_value(request, "Accept"));
+	append_KV(arg, "HTTP_REFERER", get_header_value(request, "Referer"));
+	append_KV(arg, "HTTP_ACCEPT_ENCODING", get_header_value(request, "Accept-Encoding"));
+	append_KV(arg, "HTTP_ACCEPT_LANGUAGE", get_header_value(request, "Accept-Language"));
+	append_KV(arg, "HTTP_ACCEPT_CHARSET", get_header_value(request, "Accept-Charset"));
+	append_KV(arg, "HTTP_HOST", get_header_value(request, "Host"));
+	append_KV(arg, "HTTP_COOKIE", get_header_value(request, "Cookie"));
+	append_KV(arg, "HTTP_USER_AGENT", get_header_value(request, "User-Agent"));
+	append_KV(arg, "HTTP_CONNECTION", get_header_value(request, "Connection"));
+}
+
+#define FILENAME "./cgi/cgi_dumper.py"
+int forker(char **ARGV, char **ENVP){
+#define BUF_SIZE 1024
+	/*************** BEGIN VARIABLE DECLARATIONS **************/
+	pid_t pid;
+	int stdin_pipe[2];
+	int stdout_pipe[2];
+	char buf[BUF_SIZE];
+	int readret;
+	/*************** END VARIABLE DECLARATIONS **************/
+
+	/*************** BEGIN PIPE **************/
+	/* 0 can be read from, 1 can be written to */
+	if (pipe(stdin_pipe) < 0)
+	{
+		fprintf(stderr, "Error piping for stdin.\n");
+		return EXIT_FAILURE;
+	}
+
+	if (pipe(stdout_pipe) < 0)
+	{
+		fprintf(stderr, "Error piping for stdout.\n");
+		return EXIT_FAILURE;
+	}
+	/*************** END PIPE **************/
+
+	/*************** BEGIN FORK **************/
+	pid = fork();
+	/* not good */
+	if (pid < 0)
+	{
+		fprintf(stderr, "Something really bad happened when fork()ing.\n");
+		return EXIT_FAILURE;
+	}
+
+	/* child, setup environment, execve */
+	if (pid == 0)
+	{
+		/*************** BEGIN EXECVE ****************/
+		close(stdout_pipe[0]);
+		close(stdin_pipe[1]);
+		dup2(stdout_pipe[1], fileno(stdout));
+		dup2(stdin_pipe[0], fileno(stdin));
+		/* you should probably do something with stderr */
+
+		/* pretty much no matter what, if it returns bad things happened... */
+		if (execve(FILENAME, ARGV, ENVP))
+		{
+			execve_error_handler();
+			fprintf(stderr, "Error executing execve syscall.\n");
+			return EXIT_FAILURE;
+		}
+		/*************** END EXECVE ****************/ 
+	}
+
+	char* POST_BODY = "This is the stdin body...\n";
+	if (pid > 0)
+	{
+		fprintf(stdout, "Parent: Heading to select() loop.\n");
+		close(stdout_pipe[1]);
+		close(stdin_pipe[0]);
+
+		if (write(stdin_pipe[1], POST_BODY, strlen(POST_BODY)) < 0)
+		{
+			fprintf(stderr, "Error writing to spawned CGI program.\n");
+			return EXIT_FAILURE;
+		}
+
+		close(stdin_pipe[1]); /* finished writing to spawn */
+
+		/* you want to be looping with select() telling you when to read */
+		while((readret = read(stdout_pipe[0], buf, BUF_SIZE-1)) > 0)
+		{
+			buf[readret] = '\0'; /* nul-terminate string */
+			fprintf(stdout, "Got from CGI: BEGIN BUF<<%s>>END OF BUF\n", buf);
+		}
+
+		close(stdout_pipe[0]);
+		close(stdin_pipe[1]);
+
+		if (readret == 0)
+		{
+			fprintf(stdout, "CGI spawned process returned with EOF as \
+					expected.\n");
+			return EXIT_SUCCESS;
+		}
+	}
+	/*************** END FORK **************/
+	return EXIT_SUCCESS;
+#undef BUF_SIZE
+}
 
 /**
  * @brief Handle CGI requests
@@ -552,23 +774,60 @@ NULL
  *
  * @return 		: Return_value
  */
-int handle_cgi_get(Request* request, dynamic_buffer* dbuf, struct sockaddr_in cli_addr, dynamic_buffer* odbuf, int content_length){
+int handle_cgi_get(Request* request, dynamic_buffer* dbuf, struct sockaddr_in cli_addr, dynamic_buffer* odbuf){
 	// Get paras from odbuf.
-	dynamic_buffer *paras = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
-	init_dynamic_buffer(paras);
-	catpart_dynamic_buffer(paras, odbuf, odbuf->access_end, content_length);
-	
-	// Update Global Buffer Access_end;
-	odbuf->access_end += content_length;
-	
-	// Set ENVP
-	strcat(ENVP[0], get_header_value(request, "Content-Length"));
-	strcat(ENVP[1], get_header_value(request, "Content-Type"));
+	CGI_ARG * arg = (CGI_ARG*) malloc(sizeof(CGI_ARG));
+	init_CGI_ARG(arg);
+	// SET ENVP
+	set_EVNP(arg, request, cli_addr);
+	print_CGI(arg);
+	// SET ARG
+	append_arg(arg, FILENAME);
+	//char **ENVP = (char**)malloc(sizeof(char**));
+	//int cnt = 0;
+	//kv_to_ENVP(arg, ENVP, &cnt);
+	//ENVP[cnt] = NULL;
+	arg->ENVP[arg->cnt] = NULL;
+	arg->argc[arg->argv] = NULL;	
+	LOG("END OF CONVERT %d\n" ,arg->cnt);
 
+	LOG("Begin Forker\n");
 
-	return 0;
-
+	return forker(arg->argc, arg->ENVP);
 
 }
 
+
+/**
+ * @brief Deal with CGI Post
+ *
+ * @param request	: request structure
+ * @param dbuf		: Return Buffer	
+ * @param cli_addr	: Client's address
+ * @param odbuf		: Original Buffer
+ *
+ * @return 
+ */
+int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, dynamic_buffer *odbuf){
+	// Get paras from odbuf.
+	CGI_ARG * arg = (CGI_ARG*) malloc(sizeof(CGI_ARG));
+	init_CGI_ARG(arg);
+	// SET ENVP
+	set_EVNP(arg, request, cli_addr);
+	// SET ARG
+	append_arg(arg, FILENAME);
+//	char **ENVP = (char**)malloc(sizeof(char**));
+//	int cnt = 0;
+//	kv_to_ENVP(arg, ENVP, &cnt);
+
+	// Get PARAS
+	dynamic_buffer *paras = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
+	init_dynamic_buffer(paras);
+	int content_length = atoi(get_header_value(request, "Content-Length"));
+	catpart_dynamic_buffer(paras, odbuf, odbuf->access_end, content_length);
+	// Update Global Buffer Access_end;
+	odbuf->access_end += content_length;
+
+	return forker(arg->argc, arg->ENVP);
+}
 
