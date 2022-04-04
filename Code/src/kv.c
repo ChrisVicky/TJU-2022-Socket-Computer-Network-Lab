@@ -9,7 +9,7 @@ void append_KV(CGI_ARG* arg, char* key, char *value){
 	memset(arg->ENVP[arg->cnt], 0, strlen(key)+strlen(value)+2);
 	sprintf(arg->ENVP[arg->cnt], "%s=%s", key, value);
 	arg->cnt++;
-	print_CGI(arg);
+//	print_CGI(arg);
 }
 
 void init_CGI_ARG(CGI_ARG* arg){

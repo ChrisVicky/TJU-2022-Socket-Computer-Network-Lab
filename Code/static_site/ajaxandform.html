@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!-- This is a GET form Loader -->
+<html>
+	<body>
+		<title> Login Test </title>
+		<div id="form">
+			<form id="form1" onsubmit="return false" action="##" method="get">
+				<p>User Name: <input name="userName" type="text" id="txtUserName"/></p>
+				<p>Password:  <input name="password" type="password" id="txtPassword"/></p>
+				<p><input type="button" value="Login" onclick="loading()"></p>
+			</form>
+		</div>
+		<p id="demo"></p>
+		<script>
+			function loading(){
+				var xhttp = new XMLHttpRequest();
+				var userName = document.getElementById("txtUserName").value;
+				var passWord = document.getElementById("txtPassword").value;
+				xhttp.onreadystatechange = function(){
+					if (this.status==200){
+						document.getElementById("demo").innerHTML=this.responseText;
+					}
+				};
+				var uri = "/cgi/ip.py";
+				var para = "uName=" + userName + "&uPass=" + passWord;
+				xhttp.open("GET", uri + "?" + para, true);
+				xhttp.send();
+			}
+		</script>
+	</body>			
+
+</html>

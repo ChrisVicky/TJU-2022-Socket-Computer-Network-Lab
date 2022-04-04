@@ -11,7 +11,7 @@
 #include "response.h"
 
 #define DEBUG
-
+#define BUF_SIZE 1024
 char *my_http_version = "HTTP/1.1";
 char *space = " ";
 char *crlf = "\r\n";
@@ -123,6 +123,7 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 					handle_500(dbuf, cli_addr);
 					return CLOSE;
 				}
+				return CLOSE;
 				break;
 			case POST:
 				if(handle_cgi_post(request, dbuf, cli_addr, odbuf)){
@@ -168,7 +169,6 @@ int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_ad
 		free_request(request);
 		return CLOSE;
 	}
-#define BUF_SIZE 256
 	char time_buffer[BUF_SIZE]={0}; 
 	get_time(time_buffer, BUF_SIZE);
 	char last_modified[BUF_SIZE]={0}; 
@@ -177,7 +177,6 @@ int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_ad
 	sprintf(content_length, "%ld", file_buffer.st_size);
 	//char content_type[BUF_SIZE] = {0};
 	char *content_type = get_file_type(uri_dbuf->buf);
-#undef BUF_SIZE	
 
 	reset_dynamic_buffer(dbuf);
 	set_response(dbuf, "200", "OK");
@@ -240,7 +239,6 @@ int handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 		free_request(request);
 		return CLOSE;
 	}
-#define BUF_SIZE 256
 	char time_buffer[BUF_SIZE]={0}; 
 	get_time(time_buffer, BUF_SIZE);
 	char last_modified[BUF_SIZE]={0}; 
@@ -249,7 +247,6 @@ int handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	sprintf(content_length, "%ld", file_buffer.st_size);
 	//char content_type[BUF_SIZE] = {0};
 	char *content_type = get_file_type(uri_dbuf->buf);
-#undef BUF_SIZE
 
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "200", "OK");
@@ -418,9 +415,9 @@ void get_time(char *time_buffer, size_t buffer_size){
 }
 
 // Get Last Modified
-void get_last_modified(struct stat file_buffer, char * last_modified, size_t BUF_SIZE){
+void get_last_modified(struct stat file_buffer, char * last_modified, size_t buf_size){
 	struct tm *t = gmtime(&file_buffer.st_mtime);
-	strftime(last_modified, BUF_SIZE, "%a, %d %b %Y %H:%M:%S %Z",t);
+	strftime(last_modified, buf_size, "%a, %d %b %Y %H:%M:%S %Z",t);
 }
 
 // Get Type
@@ -445,7 +442,8 @@ char* get_file_type(char * path){
 	}
 	switch(get_TYPE(extension)){
 		case HTML:
-			strcpy(result, "text/html");
+			// In case we use Chinese, UTF-8 is strictly needed.
+			strcpy(result, "text/html; charset=utf-8");
 			return result;
 		case CSS:
 			strcpy(result, "text/css");
@@ -639,12 +637,19 @@ char *get_script_name(char *uri){
 	if(end==NULL){
 		return uri;
 	}else{
-		char *temp = (char*) malloc(sizeof(char*) * (end-uri));
-		strncpy(temp, uri, end-uri);
-		temp[end-uri] = '\0';
+		char *temp = (char*) malloc(sizeof(char*) * (end-uri+1));
+		strncpy(temp+1, uri, end-uri);
+		temp[0] = '.';
+		temp[end-uri+1] = '\0';
 		return temp;
 	}
 
+}
+char *get_query_string(char *uri){
+	char *t = strstr(uri, "?");
+	if(t==NULL) 
+		return NULL;
+	return t+1;
 }
 void set_EVNP(CGI_ARG* arg, Request* request, struct sockaddr_in cli_addr){
 	append_KV(arg, "CONTENT_LENGTH", get_header_value(request, "Content-Length"));
@@ -653,7 +658,7 @@ void set_EVNP(CGI_ARG* arg, Request* request, struct sockaddr_in cli_addr){
 	//append_KV(arg, "PATH_INFO", get_path_info(request->http_uri));
 	// NULL MAY HAPPEN
 	if(method_switch(request->http_method)==GET)
-		append_KV(arg, "QUERY_STRING", strstr(request->http_uri, "?")+1);
+		append_KV(arg, "QUERY_STRING", get_query_string(request->http_uri));
 	append_KV(arg, "REMOTE_ADDR", inet_ntoa(cli_addr.sin_addr));
 	append_KV(arg, "REQUEST_METHOD", request->http_method);
 	append_KV(arg, "REQUEST_URI", request->http_uri);
@@ -672,10 +677,18 @@ void set_EVNP(CGI_ARG* arg, Request* request, struct sockaddr_in cli_addr){
 	append_KV(arg, "HTTP_CONNECTION", get_header_value(request, "Connection"));
 }
 
+/**
+ * @brief 		: fork a new thread to deal with CGI issue
+ *			: Both use in execve(FILENAME, ARGV, ENVP)
+ * @param ARGV	 	: Arguments 
+ * @param ENVP		: Environment Parameters
+ *
+ * @return 
+ */
 #define FILENAME "./cgi/cgi_dumper.py"
-int forker(char **ARGV, char **ENVP){
-#define BUF_SIZE 1024
+int forker(char **ARGV, char **ENVP, dynamic_buffer* dbuf, char *SCRIPT_NAME){
 	/*************** BEGIN VARIABLE DECLARATIONS **************/
+	LOG("Begin Forker\n");
 	pid_t pid;
 	int stdin_pipe[2];
 	int stdout_pipe[2];
@@ -718,7 +731,7 @@ int forker(char **ARGV, char **ENVP){
 		/* you should probably do something with stderr */
 
 		/* pretty much no matter what, if it returns bad things happened... */
-		if (execve(FILENAME, ARGV, ENVP))
+		if (execve(SCRIPT_NAME, ARGV, ENVP))
 		{
 			execve_error_handler();
 			fprintf(stderr, "Error executing execve syscall.\n");
@@ -747,6 +760,7 @@ int forker(char **ARGV, char **ENVP){
 		{
 			buf[readret] = '\0'; /* nul-terminate string */
 			fprintf(stdout, "Got from CGI: BEGIN BUF<<%s>>END OF BUF\n", buf);
+			append_dynamic_buffer(dbuf, buf, strlen(buf));
 		}
 
 		close(stdout_pipe[0]);
@@ -761,7 +775,6 @@ int forker(char **ARGV, char **ENVP){
 	}
 	/*************** END FORK **************/
 	return EXIT_SUCCESS;
-#undef BUF_SIZE
 }
 
 /**
@@ -775,26 +788,41 @@ int forker(char **ARGV, char **ENVP){
  * @return 		: Return_value
  */
 int handle_cgi_get(Request* request, dynamic_buffer* dbuf, struct sockaddr_in cli_addr, dynamic_buffer* odbuf){
+	// Check Script Existent
+	char *scriptName = get_script_name(request->http_uri);
+	struct stat file_buffer;
+	if(stat(scriptName, &file_buffer)){
+		ERROR("Script >>%s<< Not Exists\n" ,scriptName);
+		return EXIT_FAILURE;
+	}
 	// Get paras from odbuf.
 	CGI_ARG * arg = (CGI_ARG*) malloc(sizeof(CGI_ARG));
 	init_CGI_ARG(arg);
 	// SET ENVP
 	set_EVNP(arg, request, cli_addr);
-	print_CGI(arg);
 	// SET ARG
-	append_arg(arg, FILENAME);
-	//char **ENVP = (char**)malloc(sizeof(char**));
-	//int cnt = 0;
-	//kv_to_ENVP(arg, ENVP, &cnt);
-	//ENVP[cnt] = NULL;
+	append_arg(arg, scriptName);
+
 	arg->ENVP[arg->cnt] = NULL;
 	arg->argc[arg->argv] = NULL;	
-	LOG("END OF CONVERT %d\n" ,arg->cnt);
+	dynamic_buffer *body = (dynamic_buffer*) malloc(sizeof(dynamic_buffer));
+	init_dynamic_buffer(body);
 
-	LOG("Begin Forker\n");
+	if(forker(arg->argc, arg->ENVP, body, scriptName)){
+		handle_500(dbuf, cli_addr);
+		return EXIT_FAILURE;
+	}
 
-	return forker(arg->argc, arg->ENVP);
-
+	// SET RESPONSE
+	memset_dynamic_buffer(dbuf);
+	set_response(dbuf, "200", "OK");
+	char time_buffer[BUF_SIZE] = {0};
+		get_time(time_buffer, BUF_SIZE);
+	set_header(dbuf, "Date", time_buffer);
+	set_header(dbuf, "Server", server_info);
+	set_msg(dbuf, crlf, strlen(crlf));
+	set_msg(dbuf, body->buf, body->current);
+	return EXIT_SUCCESS;
 }
 
 
@@ -809,6 +837,13 @@ int handle_cgi_get(Request* request, dynamic_buffer* dbuf, struct sockaddr_in cl
  * @return 
  */
 int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, dynamic_buffer *odbuf){
+	// Check Script Existent
+	char *scriptName = get_script_name(request->http_uri);
+	struct stat file_buffer;
+	if(stat(scriptName, &file_buffer)){
+		ERROR("Script >>%s<< Not Exists\n" ,scriptName);
+		return EXIT_FAILURE;
+	}
 	// Get paras from odbuf.
 	CGI_ARG * arg = (CGI_ARG*) malloc(sizeof(CGI_ARG));
 	init_CGI_ARG(arg);
@@ -816,9 +851,6 @@ int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in c
 	set_EVNP(arg, request, cli_addr);
 	// SET ARG
 	append_arg(arg, FILENAME);
-//	char **ENVP = (char**)malloc(sizeof(char**));
-//	int cnt = 0;
-//	kv_to_ENVP(arg, ENVP, &cnt);
 
 	// Get PARAS
 	dynamic_buffer *paras = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
@@ -827,7 +859,28 @@ int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in c
 	catpart_dynamic_buffer(paras, odbuf, odbuf->access_end, content_length);
 	// Update Global Buffer Access_end;
 	odbuf->access_end += content_length;
+	// SET QUERY_STRING 
+	append_KV(arg, "QUERY_STRING", paras->buf);
 
-	return forker(arg->argc, arg->ENVP);
+	arg->ENVP[arg->cnt] = NULL;
+	arg->argc[arg->argv] = NULL;	
+	dynamic_buffer *body = (dynamic_buffer*) malloc(sizeof(dynamic_buffer));
+	init_dynamic_buffer(body);
+
+	if(forker(arg->argc, arg->ENVP, body, scriptName)){
+		handle_500(dbuf, cli_addr);
+		return EXIT_FAILURE;
+	}
+
+	// SET RESPONSE
+	memset_dynamic_buffer(dbuf);
+	set_response(dbuf, "200", "OK");
+	char time_buffer[BUF_SIZE] = {0};
+		get_time(time_buffer, BUF_SIZE);
+	set_header(dbuf, "Date", time_buffer);
+	set_header(dbuf, "Server", server_info);
+	set_msg(dbuf, crlf, strlen(crlf));
+	set_msg(dbuf, body->buf, body->current);
+	return EXIT_SUCCESS;
 }
 

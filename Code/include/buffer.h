@@ -16,8 +16,8 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
-//#define DEFAULT_CAPACITY 1024
-#define DEFAULT_CAPACITY 10
+#define DEFAULT_CAPACITY 1024
+//#define DEFAULT_CAPACITY 10
 // #define DEBUG
 typedef struct dynamic_buffer{
 	char *buf;
