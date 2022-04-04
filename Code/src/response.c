@@ -821,6 +821,10 @@ int handle_cgi_get(Request* request, dynamic_buffer* dbuf, struct sockaddr_in cl
 		get_time(time_buffer, BUF_SIZE);
 	set_header(dbuf, "Date", time_buffer);
 	set_header(dbuf, "Server", server_info);
+	// Set Content-Length
+	char cttlength[BUF_SIZE];
+	sprintf(cttlength, "%ld", body->current);
+	set_header(dbuf, "Content-Length", cttlength);
 	set_msg(dbuf, crlf, strlen(crlf));
 	set_msg(dbuf, body->buf, body->current);
 	return EXIT_SUCCESS;
@@ -882,6 +886,9 @@ int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in c
 		get_time(time_buffer, BUF_SIZE);
 	set_header(dbuf, "Date", time_buffer);
 	set_header(dbuf, "Server", server_info);
+	char cttlength[BUF_SIZE];
+	sprintf(cttlength, "%ld", body->current);
+	set_header(dbuf, "Content-Length", cttlength);
 	set_msg(dbuf, crlf, strlen(crlf));
 	set_msg(dbuf, body->buf, body->current);
 	return EXIT_SUCCESS;
