@@ -17,8 +17,22 @@ uName = qstring[qstring.find('=')+1:qstring.find('&')]
 qstring = qstring[qstring.find('&'):]
 uPass = qstring[qstring.find('=')+1:]
 uIp = environ["REMOTE_ADDR"]
+method = environ["REQUEST_METHOD"]
 
-print (f"Hello Mr/Ms {uName} from {uIp}, your Password is {uPass}.")
+Response = {}
+Response['Code'] = 200
+Response['Msg'] = "OK"
 
+dic = {}
+dic['Ip'] = uIp
+dic['method'] = method
+dic['uName'] = uName
+dic['uPass'] = uPass
+# print ("Hello World!\r\n")
+# print (f"Hello Mr/Ms {uName} from {uIp}\r\nyour Password is {uPass}\r\n")
+# print (f"Method Used: {method}")
+
+Response['Results'] = dic
+print(Response)
 
 

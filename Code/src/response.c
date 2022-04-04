@@ -124,13 +124,12 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 					return CLOSE;
 				}
 				return CLOSE;
-				break;
 			case POST:
 				if(handle_cgi_post(request, dbuf, cli_addr, odbuf)){
 					handle_500(dbuf, cli_addr);
 					return CLOSE;
 				}
-				break;
+				return CLOSE;
 			default:
 				handle_501(dbuf, cli_addr);
 				return CLOSE;
@@ -633,16 +632,18 @@ char *get_path_info(char *uri){
 }
 
 char *get_script_name(char *uri){
+	if(uri==NULL)
+		return NULL;
 	char *end = strstr(uri, "?");
 	if(end==NULL){
-		return uri;
-	}else{
+		end = uri + strlen(uri);
+	}
 		char *temp = (char*) malloc(sizeof(char*) * (end-uri+1));
 		strncpy(temp+1, uri, end-uri);
 		temp[0] = '.';
 		temp[end-uri+1] = '\0';
 		return temp;
-	}
+	
 
 }
 char *get_query_string(char *uri){
@@ -850,16 +851,18 @@ int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in c
 	// SET ENVP
 	set_EVNP(arg, request, cli_addr);
 	// SET ARG
-	append_arg(arg, FILENAME);
+	append_arg(arg, get_script_name(request->http_uri));
 
 	// Get PARAS
 	dynamic_buffer *paras = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
 	init_dynamic_buffer(paras);
 	int content_length = atoi(get_header_value(request, "Content-Length"));
 	catpart_dynamic_buffer(paras, odbuf, odbuf->access_end, content_length);
+	
 	// Update Global Buffer Access_end;
 	odbuf->access_end += content_length;
-	// SET QUERY_STRING 
+	
+	// SET QUERY_STRING!! 
 	append_KV(arg, "QUERY_STRING", paras->buf);
 
 	arg->ENVP[arg->cnt] = NULL;
