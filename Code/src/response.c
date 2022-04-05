@@ -10,7 +10,7 @@
 
 #include "response.h"
 
-#define DEBUG
+// #define DEBUG
 #define BUF_SIZE 1024
 char *my_http_version = "HTTP/1.1";
 char *space = " ";
@@ -56,7 +56,7 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 	// check connection:close
 	Return_value return_value = PERSISTENT;
 	char *connection_value = get_header_value(request, "Connection");
-	if((!connection_value==NULL) && (!strcmp(connection_value, "Close"))){
+	if((connection_value!=NULL) && (!strcmp(connection_value, "Close"))){
 		// Still --> May be a Post or Get to send msg here.
 		return_value = CLOSE_FROM_CLIENT;
 	}
@@ -527,7 +527,6 @@ int get_file_content(dynamic_buffer * dfbuf, char*path){
 	return 0;
 
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // Deal with CGI REQUESTS

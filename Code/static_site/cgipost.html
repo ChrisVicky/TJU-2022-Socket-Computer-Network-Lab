@@ -1,31 +1,94 @@
 <!DOCTYPE html>
 <!-- This is a GET form Loader -->
 <html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>Liso Register and Login</title>
+		<link rel="stylesheet" type="text/css" href="style.css" /> 
+<style type="text/css">
+	html,body{width: 100%;height: 100%;}
+	.fa {text-align: center;height: 100%;}
+	.fa:before{content:'';display: inline-block;height: 100%;vertical-align: middle;}
+	.centered {display: inline-block;vertical-align: middle;background: black;width: 100%;}
+
+	p{
+		text-align: center;
+	}
+	button{
+		text-align: center;
+	}
+</style>
+
+	</head>
 	<body>
-		<title> Login Test </title>
-		<div id="form">
-			<form id="form1" onsubmit="return false" action="##" method="get">
-				<p>User Name: <input name="userName" type="text" id="txtUserName"/></p>
-				<p>Password:  <input name="password" type="password" id="txtPassword"/></p>
-				<p><input type="button" value="Login" onclick="loading()"></p>
-			</form>
+		<img src="images/liso_header.png" alt="Liso the Friendly Web Server"></img>
+		<div id="header" style="background-color:#FFA500;text-align: center;">
+			<h1 >登陆、注册接口</h1></div>
+
+		<div id="content" style="background-color:#000000; margin: 0px auto;">
+			<div id="form" style="align-self: center;">
+				<form id="form1" onsubmit="return false" action="##" method="get">
+					<p>User Name: <input name="userName" type="text" id="txtUserName"/></p>
+					<p>Password: <input name="password" type="password" id="txtPassword"/></p>
+					<p><input type="button" value="Login" onclick="Login()">&nbsp;<input type="button" value="Register" onclick="Register()"></p>
+				</form>
+			</div>
 		</div>
+		<p id="Msg"></p>
 		<p id="demo"></p>
+		<p id="info"></p>
+		<p id="secret"></p>
+		<div id="footer" style="background-color:#FFA500;clear:both;text-align:center;">
+			版权 © Christopher Liu, TJU, 3020202184
+		</div>
 		<script>
-			function loading(){
+			function Login(){
 				var xhttp = new XMLHttpRequest();
 				var userName = document.getElementById("txtUserName").value;
 				var passWord = document.getElementById("txtPassword").value;
 				xhttp.onreadystatechange = function(){
-					if (this.status==200){
-						document.getElementById("demo").innerHTML=this.responseText;
+					if (this.readyState == 4 && this.status==200){
+						var obj = JSON.parse(this.responseText)
+						document.getElementById("Msg").innerHTML = "服务器提示消息：" + obj["Msg"];
+						var results = obj["Results"];
+						document.getElementById("demo").innerHTML="您好！来自 ip:" + results["Ip"] + " 的 " + results["name"] + " 您的登陆信息如下";
+						if(obj["Code"]==="400"){
+							document.getElementById("info").innerHTML="登陆失败！<br>请查看服务器提示消息进行处理";
+						}else{
+							document.getElementById("info").innerHTML="登陆成功！<br>您的第一次注册的时间是 " + results["created_at"] + "<br>" + "您上次登陆的 Ip 地址为 " + results["lastIp"];
+					}
+						document.getElementById("secret").innerHTML="";
 					}
 				};
-				var uri = "/cgi/ip.py";
+				var uri = "/cgi/login.py";
 				var para = "uName=" + userName + "&uPass=" + passWord;
 				xhttp.open("POST", uri, true);
 				xhttp.send(para);
 			}
+function Register(){
+	var xhttp = new XMLHttpRequest();
+	var userName = document.getElementById("txtUserName").value;
+	var passWord = document.getElementById("txtPassword").value;
+	xhttp.onreadystatechange = function(){
+		if (this.readyState==4 && this.status==200){
+			var obj = JSON.parse(this.responseText)
+			document.getElementById("Msg").innerHTML = "服务器提示消息：" + obj["Msg"];
+			var results = obj["Results"];
+			document.getElementById("demo").innerHTML="您好！来自 ip:" + results["Ip"] + " 的 " + results["name"] + " 您的注册信息如下";
+			if(obj["Code"]==="400"){
+				document.getElementById("info").innerHTML="注册失败！请查看服务器提示消息进行处理";
+			}else {
+				document.getElementById("info").innerHTML="注册成功！您注册的时间是 " + results["created_at"];
+			}
+			document.getElementById("secret").innerHTML="您当前使用的注册接口为 POST，相对安全";
+		}
+	};
+	var uri = "/cgi/register.py";
+	var para = "uName=" + userName + "&uPass=" + passWord;
+	xhttp.open("POST", uri, true);
+	xhttp.send(para);
+}
+
 		</script>
 	</body>			
 

@@ -32,7 +32,7 @@
 #define ECHO_PORT 9999
 #define BUF_SIZE 1024
 // #define BUF_SIZE 1
-#define DEBUG
+// #define DEBUG
 
 char * dest = "\r\n\r\n";
 int CNT_NOW = 0;
@@ -66,9 +66,6 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 	/**
 	 * strstr --> Split it out ... hanle ... return them all together.
 	 */
-	LOG("CURRENT DBUF:\n");
-	print_dynamic_buffer(dbuf);
-	printf("----------------------\n");
 	char * t;
 	/* deal pipeline */
 	Return_value result = PERSISTENT;	
@@ -221,8 +218,8 @@ int main(int argc, char* argv[])
 					//Why????
 				//	append_dynamic_buffer(ADBUF[fd], buf, strlen(buf)-2);
 					append_dynamic_buffer(ADBUF[fd], buf, strlen(buf));
-					printf("FD --> ADBUF\n");
-					print_dynamic_buffer(ADBUF[fd]);
+		//			printf("FD --> ADBUF\n");
+		//			print_dynamic_buffer(ADBUF[fd]);
 					Return_value ret = deal_buf(ADBUF[fd], readret, fd, sock, cli_addr[client_sock]);
 				
 					switch(ret){
