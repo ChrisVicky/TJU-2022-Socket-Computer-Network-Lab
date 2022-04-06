@@ -32,7 +32,7 @@
 #define ECHO_PORT 9999
 #define BUF_SIZE 1024
 // #define BUF_SIZE 1
-// #define DEBUG
+#define DEBUG
 
 char * dest = "\r\n\r\n";
 int CNT_NOW = 0;
@@ -98,7 +98,7 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 		}		
 		// Can be sent to client;
 #ifdef DEBUG
-	LOG("msg to be sent\n======================= Sending ======================\n%s\n" ,each->buf);
+	LOG("msg to be sent\n======================= Sending %ld: %ld ======================\n%s\n" ,each->current, strlen(each->buf),each->buf);
 #endif	
 		if(send(client_sock, each->buf, each->current, 0)!=each->current){
 			// Something is wrong

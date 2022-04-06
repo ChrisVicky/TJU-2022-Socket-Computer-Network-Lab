@@ -10,7 +10,7 @@
 
 #include "response.h"
 
-// #define DEBUG
+#define DEBUG
 #define BUF_SIZE 1024
 char *my_http_version = "HTTP/1.1";
 char *space = " ";
@@ -172,16 +172,17 @@ int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_ad
 	get_time(time_buffer, BUF_SIZE);
 	char last_modified[BUF_SIZE]={0}; 
 	get_last_modified(file_buffer, last_modified, BUF_SIZE);
-	char content_length[BUF_SIZE]={0};
-	sprintf(content_length, "%ld", file_buffer.st_size);
 	//char content_type[BUF_SIZE] = {0};
 	char *content_type = get_file_type(uri_dbuf->buf);
+	char content_length[BUF_SIZE]={0};
+	sprintf(content_length, "%ld", file_buffer.st_size);
+
 
 	reset_dynamic_buffer(dbuf);
 	set_response(dbuf, "200", "OK");
 	set_header(dbuf, "Date", time_buffer);
 	set_header(dbuf, "Server", server_info);
-	set_header(dbuf, "Last-Modified", last_modified);
+	set_header(dbuf, "Last-Modified", last_modified);	
 	set_header(dbuf, "Content-Length", content_length);
 	set_header(dbuf, "Content-Type", content_type);
 	if(return_value==CLOSE){
@@ -189,26 +190,32 @@ int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_ad
 	}else{
 		set_header(dbuf, "Connection", "keep-alive");
 	}
-	set_msg(dbuf, crlf, strlen(crlf));
 
 	// TODO: Open file and attach it to msg
 
-	dynamic_buffer * dfbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
-	init_dynamic_buffer(dfbuf);
-	if(get_file_content(dfbuf, uri_dbuf->buf)){
+	/*	dynamic_buffer * dfbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
+		init_dynamic_buffer(dfbuf);
+		if(get_file_content(dfbuf, uri_dbuf->buf, content_type)){
 #ifdef DEBUG
-		ERROR("Get File Content Error");
+ERROR("Get File Content Error\n");
 #endif
-		handle_404(dbuf, cli_addr);
-		return CLOSE;
-	}
+handle_404(dbuf, cli_addr);
+return CLOSE;
+}
 #ifdef DEBUG
-	//print_dynamic_buffer(dfbuf);
-#endif
-	set_msg(dbuf, dfbuf->buf, dfbuf->current);
-	//set_msg(dbuf, crlf);
-	AccessLog("OK", cli_addr, "GET", 200, current_clinet_fd);
-	return PERSISTENT;
+printf("Content Here : =======================\n");
+print_dynamic_buffer(dfbuf);
+#endif	
+
+*/
+size_t len;
+char *content = get_static_content(uri_dbuf->buf, &len);
+set_msg(dbuf, crlf, strlen(crlf));
+set_msg(dbuf, content, len);
+free_static_content(content, len);
+//set_msg(dbuf, crlf);
+AccessLog("OK", cli_addr, "GET", 200, current_clinet_fd);
+return PERSISTENT;
 }
 
 /**
@@ -482,7 +489,46 @@ TYPE get_TYPE(char *extension){
 		return NONE;
 	}
 }
+void free_static_content(char * file_buffer, size_t file_len) {
+	if (munmap(file_buffer, file_len) == -1) {
+		ERROR("[IO][ERROR] Fails to clean static content buffer");
+	}
+}
+char *get_static_content(char *path, size_t *content_len){
+	char *file_to_send;
+	size_t file_len;
 
+	int fd = open(path, O_RDONLY, (mode_t)0600);
+	if (fd == -1) {
+		ERROR("[IO][ERROR] Error when opening file %s for reading", path);
+		return NULL;
+	}
+
+	struct stat file_st = {0};
+	if ((fstat(fd, &file_st)) == -1) {
+		ERROR("[IO][ERROR] Error when getting status of file %s for reading", path);
+		close(fd);
+		return NULL;
+	}
+
+	file_len = file_st.st_size;
+	if (file_len <= 0) {
+		ERROR("[IO][ERROR] File %s is empty. Noting to read from", path);
+		close(fd);
+		return NULL;
+	}
+
+	file_to_send = mmap(0, file_len, PROT_READ, MAP_PRIVATE, fd, 0);
+	if (file_to_send == MAP_FAILED) {
+		close(fd);
+		ERROR("[IO][ERROR] File %s mapping to RAM fails: %s", path, strerror(errno));
+		return NULL;
+	}
+
+	close(fd);
+	*content_len = file_len;
+	return file_to_send;
+}
 /**
  * @brief 		: Read from files 
  *
@@ -495,7 +541,61 @@ TYPE get_TYPE(char *extension){
  */
 // Get File 
 // TODO: Add BUF_SIZE
-int get_file_content(dynamic_buffer * dfbuf, char*path){
+int get_file_content(dynamic_buffer * dfbuf, char*path, char *file_type){
+	switch(get_TYPE(file_type)){
+		case PNG:
+		case JPEG:
+		case GIF:
+		case ICO:
+			//		return get_pic_content(dfbuf, path, file_type);
+		case HTML:
+		case CSS:
+		default:
+			return get_normal_content(dfbuf, path, file_type);
+	}
+}
+
+int get_pic_content(dynamic_buffer *dfbuf, char *path, char *file_type){
+#ifdef DEBUG
+	LOG("FILE AS A PIC\n");
+#endif
+	FILE *fp = fopen(path, "r");
+	if(fp==NULL){
+		ERROR("Cannot Open Pic File '%s'\n" ,path);
+		free_dynamic_buffer(dfbuf);
+		return 1;
+	}
+	struct stat file_stat;
+	if(stat(path, &file_stat)<0){
+		ERROR("Fetch Status of File '%s' Error\n", path);
+		free_dynamic_buffer(dfbuf);
+		return 1;
+	}
+	size_t file_len = file_stat.st_size;
+	if(file_len <=0 ){
+		ERROR("File '%s' Empty\n" ,path);
+		free_dynamic_buffer(dfbuf);
+		fclose(fp);
+		return 1;
+	}
+	char *tmp = (char*) malloc(sizeof(char) * file_len);
+	memset(tmp, 0, sizeof(tmp));
+	int real_len;
+	if((real_len=fread(tmp, 1, file_len, fp))!=file_len){
+		ERROR("Not Enough File Len\n");
+		fclose(fp);
+		return 1;
+	}
+	append_dynamic_buffer(dfbuf, tmp, strlen(tmp));
+#ifdef DEBUG
+	LOG("file_len: %ld\n" ,file_len);
+	print_dynamic_buffer(dfbuf);
+#endif
+	fclose(fp);
+	return 0;
+}
+
+int get_normal_content(dynamic_buffer *dfbuf, char*path, char *file_type){
 	int fd_in=0;
 	if((fd_in=open(path, O_RDONLY))<0){
 		ERROR("Cannot Open file '%s'\n" ,path);
@@ -515,7 +615,7 @@ int get_file_content(dynamic_buffer * dfbuf, char*path){
 		close(fd_in);
 		return 1;
 	}
-	char *file = mmap(0, file_len, PROT_READ, MAP_PRIVATE, fd_in, 0);
+	char *file = mmap(NULL, file_len, PROT_READ, MAP_PRIVATE, fd_in, 0);
 	if(file==MAP_FAILED){
 		close(fd_in);
 		free_dynamic_buffer(dfbuf);
@@ -523,6 +623,11 @@ int get_file_content(dynamic_buffer * dfbuf, char*path){
 		return 1;
 	}
 	append_dynamic_buffer(dfbuf, file, file_len);
+#ifdef DEBUG
+	LOG("file: %ld\n++++++++++++++++++\n%s\n-----------------\n" ,file_len,file);
+	print_dynamic_buffer(dfbuf);
+#endif
+
 	close(fd_in);
 	return 0;
 
@@ -637,12 +742,12 @@ char *get_script_name(char *uri){
 	if(end==NULL){
 		end = uri + strlen(uri);
 	}
-		char *temp = (char*) malloc(sizeof(char*) * (end-uri+1));
-		strncpy(temp+1, uri, end-uri);
-		temp[0] = '.';
-		temp[end-uri+1] = '\0';
-		return temp;
-	
+	char *temp = (char*) malloc(sizeof(char*) * (end-uri+1));
+	strncpy(temp+1, uri, end-uri);
+	temp[0] = '.';
+	temp[end-uri+1] = '\0';
+	return temp;
+
 
 }
 char *get_query_string(char *uri){
@@ -817,7 +922,7 @@ int handle_cgi_get(Request* request, dynamic_buffer* dbuf, struct sockaddr_in cl
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "200", "OK");
 	char time_buffer[BUF_SIZE] = {0};
-		get_time(time_buffer, BUF_SIZE);
+	get_time(time_buffer, BUF_SIZE);
 	set_header(dbuf, "Date", time_buffer);
 	set_header(dbuf, "Server", server_info);
 	// Set Content-Length
@@ -861,10 +966,10 @@ int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in c
 	init_dynamic_buffer(paras);
 	int content_length = atoi(get_header_value(request, "Content-Length"));
 	catpart_dynamic_buffer(paras, odbuf, odbuf->access_end, content_length);
-	
+
 	// Update Global Buffer Access_end;
 	odbuf->access_end += content_length;
-	
+
 	// SET QUERY_STRING!! 
 	append_KV(arg, "QUERY_STRING", paras->buf);
 
@@ -882,7 +987,7 @@ int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in c
 	memset_dynamic_buffer(dbuf);
 	set_response(dbuf, "200", "OK");
 	char time_buffer[BUF_SIZE] = {0};
-		get_time(time_buffer, BUF_SIZE);
+	get_time(time_buffer, BUF_SIZE);
 	set_header(dbuf, "Date", time_buffer);
 	set_header(dbuf, "Server", server_info);
 	char cttlength[BUF_SIZE];

@@ -79,7 +79,11 @@ void set_msg(dynamic_buffer*, char*, int);
 
 void get_time(char*,size_t);
 void get_last_modified(struct stat, char*, size_t);
-int get_file_content(dynamic_buffer*, char*);
+int get_file_content(dynamic_buffer*, char*, char*);
+int get_normal_content(dynamic_buffer*, char*, char*);
+int get_pic_content(dynamic_buffer*, char*, char*);
+void free_static_content(char*,size_t);
+char* get_static_content(char*, size_t*);
 char* get_file_type(char*);
 
 /***********************  CGI ISSUE  *****************************/
