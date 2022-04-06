@@ -49,11 +49,11 @@
 				xhttp.onreadystatechange = function(){
 					if (this.readyState == 4 && this.status==200){
 						var obj = JSON.parse(this.responseText)
-						document.getElementById("Msg").innerHTML = "服务器提示消息：" + obj["Msg"];
+						document.getElementById("Msg").innerHTML = "登陆结果：";
 						var results = obj["Results"];
-						document.getElementById("demo").innerHTML="您好！来自 ip:" + results["Ip"] + " 的 " + results["name"] + " 您的登陆信息如下";
+						document.getElementById("demo").innerHTML="您好！来自 ip:" + results["Ip"] + " 的 " + decodeURIComponent(results["name"]) + " 您的登陆信息如下";
 						if(obj["Code"]==="400"){
-							document.getElementById("info").innerHTML="登陆失败！<br>请查看服务器提示消息进行处理";
+							document.getElementById("info").innerHTML="登陆失败！<br>" + obj["Msg"];
 						}else{
 							document.getElementById("info").innerHTML="登陆成功！<br>您的第一次注册的时间是 " + results["created_at"] + "<br>" + "您上次登陆的 Ip 地址为 " + results["lastIp"];
 					}
@@ -72,15 +72,15 @@ function Register(){
 	xhttp.onreadystatechange = function(){
 		if (this.readyState==4 && this.status==200){
 			var obj = JSON.parse(this.responseText)
-			document.getElementById("Msg").innerHTML = "服务器提示消息：" + obj["Msg"];
+			document.getElementById("Msg").innerHTML = "注册结果：";
 			var results = obj["Results"];
-			document.getElementById("demo").innerHTML="您好！来自 ip:" + results["Ip"] + " 的 " + results["name"] + " 您的注册信息如下";
+			document.getElementById("demo").innerHTML="您好！来自 ip:" + results["Ip"] + " 的 " + decodeURIComponent(results["name"]) + " 您的注册信息如下";
 			if(obj["Code"]==="400"){
-				document.getElementById("info").innerHTML="注册失败！请查看服务器提示消息进行处理";
+				document.getElementById("info").innerHTML="注册失败！<br>" + obj["Msg"];
 			}else {
-				document.getElementById("info").innerHTML="注册成功！您注册的时间是 " + results["created_at"];
+				document.getElementById("info").innerHTML="注册成功！<br>您注册的时间是 " + results["created_at"] + "<br>您的密码为 " + results["pass"] + "<br>您是第 " + results["number"] + " 位注册用户";
 			}
-			document.getElementById("secret").innerHTML="您当前使用的注册接口为 POST，相对安全";
+	//		document.getElementById("secret").innerHTML="您当前使用的注册接口为 POST，相对安全";
 		}
 	};
 	var uri = "/cgi/register.py";

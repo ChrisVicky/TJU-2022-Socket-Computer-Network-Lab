@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# encoding:utf-8
 #
 #   This script does not provide a valid CGI response or a valid HTTP/1.1
 #   response.  In fact, it does not even produce valid HTML.  It is meant to
@@ -50,7 +51,7 @@ if len(results)!=0:
     nT = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     if(PASS != uPass):
         Response['Code'] = "400"
-        Response['Msg'] = "Error Password"
+        Response['Msg'] = "Password Error"
     else:
         Response['Code'] = "200"
         Response['Msg'] = "User Name Registered before."
@@ -69,6 +70,13 @@ if len(results)!=0:
         cursor.execute(f"SELECT created_at FROM users WHERE u_name='{uName}'")
         result = cursor.fetchall()[0]
         dic['created_at'] = result[0].strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            cursor.execute(f"SELECT u_id FROM users WHERE u_name='{uName}'")
+            result = cursor.fetchall()[0][0]
+            dic['number'] = result
+        except:
+            exit(1)
+
 else:
     Response['Code'] = "400"
     Response['Msg'] = "You have to register before login"

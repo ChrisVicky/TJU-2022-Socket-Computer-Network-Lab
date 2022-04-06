@@ -13,13 +13,13 @@ void append_KV(CGI_ARG* arg, char* key, char *value){
 }
 
 void init_CGI_ARG(CGI_ARG* arg){
-	printf("Start INIT\n");
+//	printf("Start INIT\n");
 	memset(arg->argc, 0, sizeof(arg->argc));
 //	*(arg->argc) = (char*) malloc(sizeof(char*));
 	arg->argv = 0;
 	memset(arg->ENVP, 0, sizeof(arg->ENVP));
 	arg->cnt = 0;
-	LOG("END INIT\n");
+//	LOG("END INIT\n");
 }
 
 void free_CGI_ARG(CGI_ARG* arg){
@@ -35,12 +35,12 @@ void free_CGI_ARG(CGI_ARG* arg){
 void append_arg(CGI_ARG*arg, char *narg){
 	// If narg is null, skip
 	if(narg==NULL) return;
-	printf("EEEE %s\n" ,narg);
+//	printf("EEEE %s\n" ,narg);
 	arg->argc[arg->argv] = (char*)malloc(strlen(narg));
 	strncpy(arg->argc[arg->argv++], narg, strlen(narg));
-	print_CGI(arg);
+//	print_CGI(arg);
 	//arg->argc = (char**)realloc(arg->argc,sizeof(char**)*(arg->argv+1));
-	printf("END OF APPEND_ARG\n");
+//	printf("END OF APPEND_ARG\n");
 	return;
 }
 /*

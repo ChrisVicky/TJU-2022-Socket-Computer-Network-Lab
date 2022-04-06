@@ -32,7 +32,7 @@
 #define ECHO_PORT 9999
 #define BUF_SIZE 1024
 // #define BUF_SIZE 1
-#define DEBUG
+// #define DEBUG
 
 char * dest = "\r\n\r\n";
 int CNT_NOW = 0;

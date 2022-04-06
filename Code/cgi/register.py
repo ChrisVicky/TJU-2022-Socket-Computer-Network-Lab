@@ -73,8 +73,16 @@ else:
     dic['Ip'] = uIp
     dic['method'] = method
     dic['name'] = uName
+    dic['pass'] = uPass
     dic['created_at'] = nT
     dic['updated_at'] = nT
+
+    try:
+        cursor.execute(f"SELECT u_id FROM users WHERE u_name='{uName}'")
+        result = cursor.fetchall()[0][0]
+        dic['number'] = result
+    except:
+        exit(1)
 
 db.close()
 Response['Results'] = dic
