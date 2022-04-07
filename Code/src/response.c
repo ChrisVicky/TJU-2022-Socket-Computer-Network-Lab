@@ -151,6 +151,10 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 // Handler --> Get, Post, Head
 int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
 	dynamic_buffer *uri_dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
+	char *endcomm;
+	if((endcomm=strstr(request->http_uri, "?"))!=NULL){
+		(*endcomm) = '\0';
+	}
 	//char *default_path =  "/home/christopher/Programme/C/Web/webServerStartCodes-new/Code/static_site";
 	init_dynamic_buffer(uri_dbuf);
 	append_dynamic_buffer(uri_dbuf, default_path, strlen(default_path));
@@ -159,6 +163,7 @@ int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_ad
 		// By default, This shall be index.html
 		append_dynamic_buffer(uri_dbuf, "index.html", strlen("index.html"));
 	}
+	
 	struct stat file_buffer;
 	if(stat(uri_dbuf->buf, &file_buffer)){
 #ifdef DEBUG
@@ -221,7 +226,12 @@ int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_ad
  */
 int handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value){
 	// This should be modified if Get has other uri
-	dynamic_buffer *uri_dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));
+	dynamic_buffer *uri_dbuf = (dynamic_buffer *) malloc(sizeof(dynamic_buffer));	
+	char *endcomm;
+	if((endcomm=strstr(request->http_uri, "?"))!=NULL){
+		(*endcomm) = '\0';
+	}
+
 	//char *default_path =  "/home/christopher/Programme/C/Web/webServerStartCodes-new/Code/static_site";
 	init_dynamic_buffer(uri_dbuf);
 	append_dynamic_buffer(uri_dbuf, default_path, strlen(default_path));
@@ -501,7 +511,7 @@ int get_file_content(dynamic_buffer * dfbuf, char*path, char *file_type){
 		case JPEG:
 		case GIF:
 		case ICO:
-			return get_pic_content(dfbuf, path, file_type);
+//			return get_pic_content(dfbuf, path, file_type);
 		case HTML:
 		case CSS:
 		default:

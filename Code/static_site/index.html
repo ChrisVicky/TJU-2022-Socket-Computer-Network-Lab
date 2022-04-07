@@ -1,20 +1,46 @@
 <!DOCTYPE html> 
 <html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <title>Liso the Friendly Web Server</title>
-        <link rel="stylesheet" type="text/css" href="style.css" /> 
-    </head>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>Liso the Friendly Web Server</title>
+		<link rel="stylesheet" type="text/css" href="style.css" /> 
+<style>
+.login-button { /* 按钮美化 */
+	width: 200px; /* 宽度 */
+	height: 30px; /* 高度 */
+	border-width: 0px; /* 边框宽度 */
+	border-radius: 3px; /* 边框半径 */
+	background: #0E90FF; /* 背景颜色 */
+	cursor: pointer; /* 鼠标移入按钮范围时出现手势 */
+	outline: none; /* 不显示轮廓线 */
+	font-family: Microsoft YaHei; /* 设置字体 */
+	color: white; /* 字体颜色 */
+	font-size: 17px; /* 字体大小 */
+}
+.login-button:hover { /* 鼠标移入按钮范围时改变颜色 */
+	background: #5599FF;
+}
+</style>
+	</head>
 
-    <body>
-        <div id="page">
-            <img src="images/liso_header.png" alt="Liso the Friendly Web Server"></img>
-            <p>Welcome to the Liso 1.0 web server.  If you see this page then
-               congratulations!  Your Liso web server is up and running now!</p>
-            <p>This Liso web server was implemented by: Christopher Liu
-               &#60;<a href="mailto:1051666563@qq.com">1051666563@qq.com
-                    </a>&#62;</p>
-        </div>
-    </body>
+	<body>
+		<div id="page">
+			<img src="images/liso_header.png" alt="Liso the Friendly Web Server"></img>
+			<p>Welcome to the Liso 1.0 web server.  If you see this page then
+			congratulations!  Your Liso web server is up and running now!</p>
+			<p>This Liso web server was implemented by: Christopher Liu
+			&#60;<a href="mailto:1051666563@qq.com">1051666563@qq.com
+			</a>&#62;</p>
+
+	
+			<form method="get" action="/cgiget.html">
+				<p> Test CGI request with GET method: <button class="login-button" type="submit">GET METHOD</button></p>
+			</form>
+			<form method="get" action="/cgipost.html">
+				<p> Test CGI request with POST method: <button class="login-button" type="submit">POST METHOD</button></p>
+			</form>
+
+		</div>
+	</body>
 
 </html>

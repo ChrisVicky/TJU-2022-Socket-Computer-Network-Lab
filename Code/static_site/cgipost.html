@@ -5,32 +5,63 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<title>Liso Register and Login</title>
 		<link rel="stylesheet" type="text/css" href="style.css" /> 
-<style type="text/css">
-	html,body{width: 100%;height: 100%;}
-	.fa {text-align: center;height: 100%;}
-	.fa:before{content:'';display: inline-block;height: 100%;vertical-align: middle;}
-	.centered {display: inline-block;vertical-align: middle;background: black;width: 100%;}
+		<style type="text/css">
+html,body{width: 100%;height: 100%;}
+.fa {text-align: center;height: 100%;}
+.fa:before{content:'';display: inline-block;height: 100%;vertical-align: middle;}
+.centered {display: inline-block;vertical-align: middle;background: black;width: 100%;}
 
-	p{
-		text-align: center;
-	}
+p{
+	text-align: center;
+}
 	button{
 		text-align: center;
 	}
-</style>
+	.login-button1 { /* 按钮美化 */
+		width: 200px; /* 宽度 */
+		height: 30px; /* 高度 */
+		border-width: 0px; /* 边框宽度 */
+		border-radius: 3px; /* 边框半径 */
+		background: #0E90FF; /* 背景颜色 */
+		cursor: pointer; /* 鼠标移入按钮范围时出现手势 */
+		outline: none; /* 不显示轮廓线 */
+		font-family: Microsoft YaHei; /* 设置字体 */
+		color: white; /* 字体颜色 */
+		font-size: 17px; /* 字体大小 */
+	}
+	.login-button { /* 按钮美化 */
+		width: 100px; /* 宽度 */
+		height: 30px; /* 高度 */
+		border-width: 0px; /* 边框宽度 */
+		border-radius: 3px; /* 边框半径 */
+		background: #0E90FF; /* 背景颜色 */
+		cursor: pointer; /* 鼠标移入按钮范围时出现手势 */
+		outline: none; /* 不显示轮廓线 */
+		font-family: Microsoft YaHei; /* 设置字体 */
+		color: white; /* 字体颜色 */
+		font-size: 17px; /* 字体大小 */
+	}
+	.login-button:hover { /* 鼠标移入按钮范围时改变颜色 */
+		background: #5599FF;
+	}
+		</style>
 
 	</head>
 	<body>
 		<img src="images/liso_header.png" alt="Liso the Friendly Web Server"></img>
 		<div id="header" style="background-color:#FFA500;text-align: center;">
-			<h1 >登陆、注册接口</h1></div>
-
+			<h1 >登陆、注册接口</h1>
+			<h2 >请求方法：POST</h2>
+		</div>
 		<div id="content" style="background-color:#000000; margin: 0px auto;">
+			<form method="get" action="/">
+				<p> <button class="login-button1" type="submit">Back to Home Page</button></p>
+			</form>		
 			<div id="form" style="align-self: center;">
 				<form id="form1" onsubmit="return false" action="##" method="get">
 					<p>User Name: <input name="userName" type="text" id="txtUserName"/></p>
 					<p>Password: <input name="password" type="password" id="txtPassword"/></p>
-					<p><input type="button" value="Login" onclick="Login()">&nbsp;<input type="button" value="Register" onclick="Register()"></p>
+					<p><button type="button" class="login-button" onclick="Login()">LOGIN</button>&nbsp;<button class="login-button" type="button" onclick="Register()">REGISTER</button></p>
 				</form>
 			</div>
 		</div>
@@ -56,7 +87,7 @@
 							document.getElementById("info").innerHTML="登陆失败！<br>" + obj["Msg"];
 						}else{
 							document.getElementById("info").innerHTML="登陆成功！<br>您的第一次注册的时间是 " + results["created_at"] + "<br>" + "您上次登陆的 Ip 地址为 " + results["lastIp"];
-					}
+						}
 						document.getElementById("secret").innerHTML="";
 					}
 				};
@@ -80,7 +111,7 @@ function Register(){
 			}else {
 				document.getElementById("info").innerHTML="注册成功！<br>您注册的时间是 " + results["created_at"] + "<br>您的密码为 " + results["pass"] + "<br>您是第 " + results["number"] + " 位注册用户";
 			}
-	//		document.getElementById("secret").innerHTML="您当前使用的注册接口为 POST，相对安全";
+			//		document.getElementById("secret").innerHTML="您当前使用的注册接口为 POST，相对安全";
 		}
 	};
 	var uri = "/cgi/register.py";
