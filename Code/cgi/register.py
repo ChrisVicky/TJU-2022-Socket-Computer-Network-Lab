@@ -26,6 +26,9 @@ method = environ["REQUEST_METHOD"]
 Response = {}
 dic = {}
 
+dic['Ip'] = uIp
+dic['method'] = method
+
 if len(uName)==0 or len(uPass)==0:
     Response['Code'] = "400"
     Response['Msg'] = "Invalid User Name or User Password"
@@ -35,12 +38,33 @@ if len(uName)==0 or len(uPass)==0:
     Response = json.dumps(Response)
     print(Response)
     exit(0)
+ 
+dic['name'] = uName
+dic['password'] = uPass
 
-db = pymysql.connect(host="8.141.166.181", user="twt_vote", password="TWT_vote1895", database="socket_db")
+try:
+    db = pymysql.connect(host="8.141.166.181", user="twt_vote", password="TWT_vote1895", database="socket_db")
+except:
+    Response['Code'] = "400"
+    Response['Msg'] = "SQL Connection Error"
+    Response['Results'] = dic
+    Response = json.dumps(Response)
+    print(Response)
+    exit(1)
+
 cursor = db.cursor()
 SLC_NAME = f"SELECT * FROM users WHERE u_name='{uName}'"
-cursor.execute(SLC_NAME)
-results = cursor.fetchall()
+try:
+    cursor.execute(SLC_NAME)
+    results = cursor.fetchall()
+except:
+    Response['Code'] = "400"
+    Response['Msg'] = "SQL Connection Error"
+    Response['Results'] = dic
+    Response = json.dumps(Response)
+    print(Response)
+    exit(1)
+
 if len(results)!=0:
     # User Name has been Registered before.
 
@@ -51,10 +75,19 @@ if len(results)!=0:
     dic['method'] = method
     dic['name'] = uName
 
-    cursor.execute(f"SELECT created_at FROM users WHERE u_name='{uName}'")
-    result = cursor.fetchall()[0][0].strftime("%Y-%m-%d %H:%M:%S")
-    Response['Msg'] = f"User Name Registered at {result}."
-    dic['created_at'] = result
+    try:
+        cursor.execute(f"SELECT created_at FROM users WHERE u_name='{uName}'")
+        result = cursor.fetchall()[0][0].strftime("%Y-%m-%d %H:%M:%S")
+        Response['Msg'] = f"User Name Registered at {result}."
+        dic['created_at'] = result
+    except:
+        Response['Code'] = "400"
+        Response['Msg'] = "SQL Connection Error"
+        Response['Results'] = dic
+        Response = json.dumps(Response)
+        print(Response)
+        exit(1)
+
 
 else:
     # Insert into Database

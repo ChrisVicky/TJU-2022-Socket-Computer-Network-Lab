@@ -28,6 +28,8 @@ method = environ["REQUEST_METHOD"]
 Response = {}
 dic = {}
 
+dic['Ip'] = uIp
+dic['method'] = method
 
 if len(uName)==0 or len(uPass)==0:
     dic['Ip'] = uIp
@@ -39,11 +41,30 @@ if len(uName)==0 or len(uPass)==0:
     print(Response)
     exit(0)
 
-db = pymysql.connect(host="8.141.166.181", user="twt_vote", password="TWT_vote1895", database="socket_db")
+dic['name'] = uName
+dic['password'] = uPass
+try:
+    db = pymysql.connect(host="8.141.166.181", user="twt_vote", password="TWT_vote1895", database="socket_db")
+except:
+    Response['Code'] = "400"
+    Response['Msg'] = "SQL Connection Error"
+    Response['Results'] = dic
+    Response = json.dumps(Response)
+    print(Response)
+    exit(1)
 cursor = db.cursor()
 SLC_NAME = f"SELECT * FROM users WHERE u_name='{uName}'"
-cursor.execute(SLC_NAME)
-results = cursor.fetchall()
+try:
+    cursor.execute(SLC_NAME)
+    results = cursor.fetchall()
+except:
+    Response['Code'] = "400"
+    Response['Msg'] = "SQL Select Error"
+    Response['Results'] = dic
+    Response = json.dumps(Response)
+    print(Response)
+    exit(1)
+
 if len(results)!=0:
     # User Name has been Registered before.
 

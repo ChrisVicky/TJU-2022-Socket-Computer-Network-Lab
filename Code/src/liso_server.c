@@ -32,7 +32,7 @@
 #define ECHO_PORT 9999
 #define BUF_SIZE 1024
 // #define BUF_SIZE 1
-// #define DEBUG
+ #define DEBUG
 
 char * dest = "\r\n\r\n";
 int CNT_NOW = 0;
@@ -174,7 +174,6 @@ int main(int argc, char* argv[])
 	while (1)
 	{
 		fd_set tmp_fds = tot_fds;
-//		HeadLog(addr);
 		PRINTHEAD(ECHO_PORT);
 		int cnt, fd;
 		if((cnt = select(MAX_FD_SIZE+1, &tmp_fds, NULL, NULL, NULL)) < 1){
@@ -185,9 +184,6 @@ int main(int argc, char* argv[])
 			if(!FD_ISSET(fd, &tmp_fds)){
 				continue;
 			}
-#ifdef DEBUG
-			LOG("cnt : %d\n" ,cnt);
-#endif
 			if(!cnt--){
 				break;
 			}
@@ -214,12 +210,7 @@ int main(int argc, char* argv[])
 #ifdef DEBUG
 					LOG("MSG RECVED:\n%s\n" ,buf);
 #endif
-					//TODO: CHECK WHETHER THIS is Correct
-					//Why????
-				//	append_dynamic_buffer(ADBUF[fd], buf, strlen(buf)-2);
 					append_dynamic_buffer(ADBUF[fd], buf, strlen(buf));
-		//			printf("FD --> ADBUF\n");
-		//			print_dynamic_buffer(ADBUF[fd]);
 					Return_value ret = deal_buf(ADBUF[fd], readret, fd, sock, cli_addr[client_sock]);
 				
 					switch(ret){

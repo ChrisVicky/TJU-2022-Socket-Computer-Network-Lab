@@ -851,9 +851,11 @@ int handle_cgi_get(Request* request, dynamic_buffer* dbuf, struct sockaddr_in cl
 	init_dynamic_buffer(body);
 
 	if(forker(arg->argc, arg->ENVP, body, scriptName)){
+		LOG("ERROR\n");
 		handle_500(dbuf, cli_addr);
 		return EXIT_FAILURE;
 	}
+
 
 	// SET RESPONSE
 	memset_dynamic_buffer(dbuf);
@@ -916,9 +918,11 @@ int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in c
 	init_dynamic_buffer(body);
 
 	if(forker(arg->argc, arg->ENVP, body, scriptName)){
+		LOG("ERROR\n");
 		handle_500(dbuf, cli_addr);
 		return EXIT_FAILURE;
 	}
+
 
 	// SET RESPONSE
 	memset_dynamic_buffer(dbuf);
