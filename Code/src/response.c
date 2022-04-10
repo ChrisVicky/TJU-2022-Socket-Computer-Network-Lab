@@ -50,6 +50,7 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 	// 400 Error Parsing
 	if(request == NULL){
 		handle_400(dbuf, cli_addr);
+		free_request(request);
 		return CLOSE;
 	}
 
@@ -121,17 +122,22 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 			case GET:
 				if(handle_cgi_get(request, dbuf, cli_addr, odbuf)){
 					handle_500(dbuf, cli_addr);
+					free_request(request);
 					return CLOSE;
 				}
+				free_request(request);
 				return CLOSE;
 			case POST:
 				if(handle_cgi_post(request, dbuf, cli_addr, odbuf)){
 					handle_500(dbuf, cli_addr);
+					free_request(request);
 					return CLOSE;
 				}
+				free_request(request);
 				return CLOSE;
 			default:
 				handle_501(dbuf, cli_addr);
+				free_request(request);
 				return CLOSE;
 
 		}
@@ -171,6 +177,7 @@ int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_ad
 #endif
 		handle_404(dbuf, cli_addr);
 		free_request(request);
+		free_dynamic_buffer(uri_dbuf);
 		return CLOSE;
 	}
 	char time_buffer[BUF_SIZE]={0}; 
@@ -204,7 +211,12 @@ int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_ad
 #ifdef DEBUG
 		ERROR("Get File Content Error");
 #endif
+		free_dynamic_buffer(dfbuf);
+		free_dynamic_buffer(uri_dbuf);
+		free(content_type);
+		content_type = NULL;
 		handle_404(dbuf, cli_addr);
+		free_request(request);
 		return CLOSE;
 	}
 #ifdef DEBUG
@@ -213,6 +225,11 @@ int handle_get(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_ad
 	set_msg(dbuf, dfbuf->buf, dfbuf->current);
 	//set_msg(dbuf, crlf);
 	AccessLog("OK", cli_addr, "GET", 200, current_clinet_fd);
+	free_dynamic_buffer(uri_dbuf);
+	free_dynamic_buffer(dfbuf);
+	free(content_type);
+	content_type = NULL;
+	free_request(request);
 	return PERSISTENT;
 }
 
@@ -246,6 +263,8 @@ int handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 #endif
 		handle_404(dbuf, cli_addr);
 		free_request(request);
+		free_dynamic_buffer(uri_dbuf);
+		free_request(request);
 		return CLOSE;
 	}
 	char time_buffer[BUF_SIZE]={0}; 
@@ -264,6 +283,8 @@ int handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	set_header(dbuf, "Last-Modified", last_modified);
 	set_header(dbuf, "Content-Length", content_length);
 	set_header(dbuf, "Content-Type", content_type);
+	free(content_type);
+	content_type = NULL;
 	if(return_value==CLOSE){
 		set_header(dbuf, "Connection", "Close");
 	}else{
@@ -272,6 +293,7 @@ int handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	set_msg(dbuf, crlf, strlen(crlf));
 	AccessLog("OK", cli_addr, "HEAD", 200, current_clinet_fd);
 	free_dynamic_buffer(uri_dbuf);
+	free_request(request);
 	return PERSISTENT;
 }
 
@@ -298,6 +320,7 @@ void handle_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_
 
 	// Post: Just Echo back 
 	*/
+	free_request(request);
 	AccessLog("Echo Back", cli_addr,"POST", 200, current_clinet_fd);
 	return ;
 }
@@ -364,7 +387,9 @@ METHODS method_switch(char *method){
 void free_request(Request * request){
 	if(request==NULL) return;
 	free(request->headers);
+	request->headers = NULL;
 	free(request);
+	request = NULL;
 	return ;
 }
 
@@ -705,16 +730,27 @@ char *get_query_string(char *uri){
 }
 void set_EVNP(CGI_ARG* arg, Request* request, struct sockaddr_in cli_addr){
 	append_KV(arg, "CONTENT_LENGTH", get_header_value(request, "Content-Length"));
-	append_KV(arg, "CONTENT_TYPE", get_file_type(request->http_uri));
+
+	char *file_type = get_file_type(request->http_uri);
+	append_KV(arg, "CONTENT_TYPE", file_type);
+	free(file_type);
+	file_type = NULL;
+
 	append_KV(arg, "GATEWAY_INTERFACE", "CGI/1.1");
 	//append_KV(arg, "PATH_INFO", get_path_info(request->http_uri));
 	// NULL MAY HAPPEN
-	if(method_switch(request->http_method)==GET)
+	if(method_switch(request->http_method)==GET){
 		append_KV(arg, "QUERY_STRING", get_query_string(request->http_uri));
+	}
 	append_KV(arg, "REMOTE_ADDR", inet_ntoa(cli_addr.sin_addr));
 	append_KV(arg, "REQUEST_METHOD", request->http_method);
 	append_KV(arg, "REQUEST_URI", request->http_uri);
-	append_KV(arg, "SCRIPT_NAME", get_script_name(request->http_uri));
+
+	char *script_name = get_script_name(request->http_uri);
+	append_KV(arg, "SCRIPT_NAME", script_name);
+	free(script_name);
+	script_name = NULL;
+
 	append_KV(arg, "SERVER_PORT", "9999"); // This can be improved!!!!!
 	append_KV(arg, "SERVER_PROTOCOL", "HTTP/1.1");
 	append_KV(arg, "SERVER_SOFTWARE", "Liso/1.0");
@@ -863,6 +899,7 @@ int handle_cgi_get(Request* request, dynamic_buffer* dbuf, struct sockaddr_in cl
 	if(forker(arg->argc, arg->ENVP, body, scriptName)){
 		LOG("ERROR\n");
 		handle_500(dbuf, cli_addr);
+		free_CGI_ARG(arg);
 		return EXIT_FAILURE;
 	}
 
@@ -880,6 +917,7 @@ int handle_cgi_get(Request* request, dynamic_buffer* dbuf, struct sockaddr_in cl
 	set_header(dbuf, "Content-Length", cttlength);
 	set_msg(dbuf, crlf, strlen(crlf));
 	set_msg(dbuf, body->buf, body->current);
+	free_CGI_ARG(arg);
 	return EXIT_SUCCESS;
 }
 
@@ -930,6 +968,7 @@ int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in c
 	if(forker(arg->argc, arg->ENVP, body, scriptName)){
 		LOG("ERROR\n");
 		handle_500(dbuf, cli_addr);
+		free_CGI_ARG(arg);
 		return EXIT_FAILURE;
 	}
 
@@ -946,6 +985,7 @@ int handle_cgi_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in c
 	set_header(dbuf, "Content-Length", cttlength);
 	set_msg(dbuf, crlf, strlen(crlf));
 	set_msg(dbuf, body->buf, body->current);
+	free_CGI_ARG(arg);
 	return EXIT_SUCCESS;
 }
 

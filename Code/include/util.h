@@ -43,5 +43,5 @@
 #define PRINT2(format, ...) printf("\33[1;34m" format "\33[0m", ## __VA_ARGS__)
 
 void helper(int, char);
-void PRINTHEAD(int);
+void PRINTHEAD(int, int ,int);
 

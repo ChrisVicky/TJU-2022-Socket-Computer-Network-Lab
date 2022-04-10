@@ -168,13 +168,12 @@ int main(int argc, char* argv[])
 
 	FD_ZERO(&tot_fds); // INIT
 	FD_SET(sock, &tot_fds); // Add Server Socket to SET;
-
-
+	int _cnt = 0, _tot = 0;
 	/* finally, loop waiting for input and then write it back */
 	while (1)
 	{
 		fd_set tmp_fds = tot_fds;
-		PRINTHEAD(ECHO_PORT);
+		PRINTHEAD(ECHO_PORT, _cnt, _tot);
 		int cnt, fd;
 		if((cnt = select(MAX_FD_SIZE+1, &tmp_fds, NULL, NULL, NULL)) < 1){
 			ERRORLOG("Select < 1, No Clients");
@@ -201,6 +200,8 @@ int main(int argc, char* argv[])
 				cli_addr[client_sock] = cli_addr_tmp;
 				FD_SET(client_sock, &tot_fds);
 				init_dynamic_buffer(ADBUF[client_sock]);
+				_cnt ++;
+				_tot ++;
 				AcceptLog(cli_addr[client_sock], client_sock);
 			}else{
 				/* Have Connected */
@@ -223,6 +224,7 @@ int main(int argc, char* argv[])
 							free_buffer_dynamic_buffer(ADBUF[fd]);
 							FD_CLR(fd, &tot_fds);
 							LeaveLog(cli_addr[fd],fd);
+							_cnt --;
 							break;
 						case PERSISTENT:
 							ACCESSLOG("Complete with this\n");
@@ -236,6 +238,7 @@ int main(int argc, char* argv[])
 					close_socket(fd);
 					FD_CLR(fd, &tot_fds);
 					LeaveLog(cli_addr[fd], fd);
+					_cnt--;
 				}else{
 					close_socket(fd);
 					ERROR("Readret < 0!\n");

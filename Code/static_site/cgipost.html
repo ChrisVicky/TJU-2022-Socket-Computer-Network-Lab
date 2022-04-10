@@ -86,8 +86,8 @@ p{
 						if(obj["Code"]==="400"){
 							document.getElementById("info").innerHTML="登陆失败！<br>" + obj["Msg"];
 						}else{
-							document.getElementById("info").innerHTML="登陆成功！<br>您的第一次注册的时间是 " + results["created_at"] + "<br>" + "您上次登陆的 Ip 地址为 " + results["lastIp"];
-						}
+							document.getElementById("info").innerHTML="登陆成功！<br>"+ "您是第 " + results["number"] + " 位用户<br>" +  "注册的时间是 " + results["created_at"] + "<br>" + "上次登陆的 Ip 地址为 " + results["lastIp"];
+					}
 						document.getElementById("secret").innerHTML="";
 					}
 				};

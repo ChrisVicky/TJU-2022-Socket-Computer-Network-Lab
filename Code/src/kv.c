@@ -25,10 +25,17 @@ void init_CGI_ARG(CGI_ARG* arg){
 void free_CGI_ARG(CGI_ARG* arg){
 	if(arg==NULL)
 		return;
-	if(arg->argc!=NULL){
-		free(arg->argc);
+	int i;
+	for(i=0;i<arg->cnt;i++){
+		free(arg->ENVP[i]);
+		arg->ENVP[i] = NULL;
+	}
+	for(i=0;i<arg->argv;i++){
+		free(arg->argc[i]);
+		arg->argc[i] = NULL;
 	}
 	free(arg);
+	arg = NULL;
 	return;
 }
 
