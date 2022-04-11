@@ -13,7 +13,7 @@
     \label{fig:lab4test1}
 \end{figure}
 
-\section{Autolab 测试} 如图\ref{fig:autolab4} 所示，在 3月29日 下午完成了初稿，后续修改了部分细节。
+\section{Autolab 测试} 如图\ref{fig:autolab4} 所示，在 3月29日 下午完成了基础功能，后续修改了部分细节（同时也在进行 CGI 的编程）。
 
 \begin{figure}[htbp!]
     \centering
@@ -22,8 +22,8 @@
 \end{figure}
 
 \section{Apache 测试} 
-
-第三周的 liso\_server 由于没有进行并发优化。在测试时由于会一直等待客户端提出退出申请，在测试时会出现 Apache Bench 忙等待。我们分别进行了并发压力测试以及多请求压力测试。测试截图统一放在附录中。
+我们分别进行了并发压力测试以及多请求压力测试。测试截图统一放在附录中。
+第三周的 liso\_server 由于没有进行并发优化。在测试时由于会一直等待客户端提出退出申请，在测试时会出现 Apache Bench 忙等待。故而我们只对第四周的 liso\_server 进行了测试。
 
 \paragraph*{并发压力测试} 控制总请求数不变的情况下，我们分别进行了并发数量为 10、100 以及 1000 的测试，结果如图所示。如表\ref{tab:parallel} 所示，总请求数量不变情况下，随着并发等级的提高，单个请求的平均反应时间并没有太大的变化。所以可以认为我们的方案是能够解决高并发问题的。
 
