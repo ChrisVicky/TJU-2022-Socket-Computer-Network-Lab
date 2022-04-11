@@ -576,30 +576,32 @@ int get_normal_content(dynamic_buffer *dfbuf, char*path, char *file_type){
 	int fd_in=0;
 	if((fd_in=open(path, O_RDONLY))<0){
 		ERROR("Cannot Open file '%s'\n" ,path);
-		free_dynamic_buffer(dfbuf);
+//		free_dynamic_buffer(dfbuf);
 		return 1;
 	}
 	struct stat file_stat;
 	if((fstat(fd_in, &file_stat))<0){
 		ERROR("Fetching Status of File '%s' Error\n", path);
-		free_dynamic_buffer(dfbuf);
+//		free_dynamic_buffer(dfbuf);
 		return 1;
 	}
 	size_t file_len = file_stat.st_size;
 	if(file_len<=0){
 		ERROR("File '%s' Empty\n" ,path);
-		free_dynamic_buffer(dfbuf);
+//		free_dynamic_buffer(dfbuf);
 		close(fd_in);
 		return 1;
 	}
 	char *file = mmap(0, file_len, PROT_READ, MAP_PRIVATE, fd_in, 0);
 	if(file==MAP_FAILED){
 		close(fd_in);
-		free_dynamic_buffer(dfbuf);
-		ERROR("ERROR Mappig file\n");
+//		free_dynamic_buffer(dfbuf);
+		ERROR("ERROR Mapping file\n");
 		return 1;
 	}
 	append_dynamic_buffer(dfbuf, file, file_len);
+//	free(file);
+	munmap(file, file_len);
 	close(fd_in);
 	return 0;
 

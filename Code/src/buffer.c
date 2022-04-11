@@ -48,8 +48,10 @@ void free_dynamic_buffer(dynamic_buffer * db){
 		return ;
 	}
 	if(strlen(db->buf))
-		free(db->buf);
+	{free(db->buf);}
+	db->buf = NULL;
 	free(db);
+	db = NULL;
 }
 
 void append_dynamic_buffer(dynamic_buffer * db, char * buf, size_t len){
