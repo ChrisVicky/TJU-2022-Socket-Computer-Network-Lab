@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019/Debian) (preloaded format=xelatex 2021.11.29)  11 APR 2022 22:54
+This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019/Debian) (preloaded format=xelatex 2021.11.29)  11 APR 2022 23:16
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1121,6 +1121,20 @@ LaTeX Warning: Reference `fig:' on page 3 undefined on input line 53.
 
 ) (./chapters/chapter3.tex [3]
 第三章
+
+./chapters/chapter3.tex:12: LaTeX Error: File `' not found.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.12   \includegraphics[]{}
+                           
+I could not locate the file with any of these extensions:
+.pdf,.PDF,.ai,.AI,.png,.PNG,.jpg,.JPG,.jpeg,.JPEG,.jp2,.JP2,.jpf,.JPF,.bmp,.BMP,.ps,.PS,.eps,.EPS,.mps,.MPS,.pz,.eps.Z,.ps.Z,.ps.gz,.eps.gz
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
 ) (./chapters/chapter4.tex [4
 
 ]
@@ -1169,15 +1183,9 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 71.
  (./tjumain.aux (./body.aux))
 Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 71.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 71.
+Package rerunfilecheck Info: File `tjumain.out' has not changed.
+(rerunfilecheck)             Checksum: 071AF9C429845722D16DABDF58C35258;3397.
 
-
-Package rerunfilecheck Warning: File `tjumain.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `tjumain.out':
-(rerunfilecheck)             Before: 999839A70F945A5056769916062466C9;3217
-(rerunfilecheck)             After:  071AF9C429845722D16DABDF58C35258;3397.
 
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 0.6pt have occurred.
@@ -1188,10 +1196,10 @@ LaTeX Warning: There were undefined references.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 71.
  ) 
 Here is how much of TeX's memory you used:
- 23242 strings out of 481301
- 452666 string characters out of 5924271
- 932991 words of memory out of 5000000
- 39828 multiletter control sequences out of 15000+600000
+ 23293 strings out of 481301
+ 453294 string characters out of 5924271
+ 934180 words of memory out of 5000000
+ 39856 multiletter control sequences out of 15000+600000
  587365 words of font info for 157 fonts, out of 8000000 for 9000
  286 hyphenation exceptions out of 8191
  56i,11n,72p,975b,497s stack positions out of 5000i,500n,10000p,200000b,80000s
