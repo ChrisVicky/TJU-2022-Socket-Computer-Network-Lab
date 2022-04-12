@@ -1,3 +1,13 @@
+/*****************************************************************
+*   Copyright (C) 2022 TJU Liu Jinfan. All rights reserved.
+*   
+*   文件名称：kv.h
+*   创 建 者：Christopher Liu  1051666563@qq.com
+*   创建日期：2022年03月21日
+*   描    述：存储键值对以及参数优化
+*
+*****************************************************************/
+
 #include "util.h"
 #include<string.h>
 #include<stdlib.h>
