@@ -7,7 +7,7 @@
 *   描    述：动态缓冲区具体实现
 *
 *****************************************************************/
-#define DEBUG
+//#define DEBUG
 
 #include "buffer.h"
 void init_dynamic_buffer(dynamic_buffer * db){

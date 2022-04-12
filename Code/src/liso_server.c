@@ -32,7 +32,7 @@
 #define ECHO_PORT 9999
 #define BUF_SIZE 1024
 // #define BUF_SIZE 1
- #define DEBUG
+// #define DEBUG
 
 char * dest = "\r\n\r\n";
 int CNT_NOW = 0;
@@ -72,7 +72,7 @@ int deal_buf(dynamic_buffer * dbuf, size_t readret, int client_sock, int sock, s
 	dynamic_buffer * each = (dynamic_buffer *)malloc(sizeof(dynamic_buffer));
 	init_dynamic_buffer(each);
 
-	LOG("After Init,begin while\n");
+//	LOG("After Init,begin while\n");
 	while((t=strstr(dbuf->buf,dest))!=NULL){
 		int len = t - dbuf->buf;
 		memset_dynamic_buffer(each);
@@ -228,10 +228,10 @@ int main(int argc, char* argv[])
 							_cnt --;
 							break;
 						case PERSISTENT:
-							ACCESSLOG("Complete with this\n");
+							DealLog(cli_addr[fd], fd,"Complete with this");
 							break;
 						default:
-							ACCESSLOG("Not complete, wait next time");
+							DealLog(cli_addr[fd], fd,"Complete with this");
 					}
 				}else if(!readret){
 					/* Receive Nothing --> Close Connection */
