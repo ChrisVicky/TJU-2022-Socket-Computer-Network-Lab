@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019/Debian) (preloaded format=xelatex 2021.11.29)  12 APR 2022 18:36
+This is XeTeX, Version 3.14159265-2.6-0.999991 (TeX Live 2019/Debian) (preloaded format=xelatex 2021.11.29)  12 APR 2022 22:06
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1096,11 +1096,11 @@ LaTeX Font Info:    Calculating math sizes for size <14> on input line 9.
 
 
 
-])
+] [2])
 \tf@toc=\write4
 \openout4 = `tjumain.toc'.
 
- [2]
+ [3]
 \openout2 = `body.aux'.
 
  (./body.tex (./chapters/chapter1.tex
@@ -1115,7 +1115,10 @@ LaTeX Font Info:    Font shape `T1/txr/b/n' in size <12> not available
 (Font)              Font shape `T1/txr/bx/n' tried instead on input line 4.
 [2
 
-]) (./chapters/chapter3.tex [3]
+]
+File: figures/Liso_Complete.png Graphic file (type bmp)
+<figures/Liso_Complete.png>
+) (./chapters/chapter3.tex [3]
 第三章
 File: figures/Web_code_Structure.png Graphic file (type bmp)
 <figures/Web_code_Structure.png>
@@ -1272,15 +1275,43 @@ File: figures/CGILogin.png Graphic file (type bmp)
 <figures/CGILogin.png>
 File: figures/CGIRegister.png Graphic file (type bmp)
 <figures/CGIRegister.png>
+ [20]
 File: figures/database.png Graphic file (type bmp)
 <figures/database.png>
-) (./chapters/chapter5.tex [20] [21]
+File: figures/liso.sh.png Graphic file (type bmp)
+<figures/liso.sh.png>
+) (./chapters/chapter5.tex [21]
 第五章
-File: figures/Liso_Server_Complete.png Graphic file (type bmp)
-<figures/Liso_Server_Complete.png>
-) (./chapters/chapter6.tex [22
+File: figures/autolab_uploaded.png Graphic file (type bmp)
+<figures/autolab_uploaded.png>
+File: figures/autolab2.png Graphic file (type bmp)
+<figures/autolab2.png>
+File: figures/autolab3.png Graphic file (type bmp)
+<figures/autolab3.png>
+File: figures/autolab4.png Graphic file (type bmp)
+<figures/autolab4.png>
+File: figures/head_get_post.png Graphic file (type bmp)
+<figures/head_get_post.png>
+File: figures/400_501.png Graphic file (type bmp)
+<figures/400_501.png>
+[22
 
-]
+] [23]
+File: figures/liso_web.png Graphic file (type bmp)
+<figures/liso_web.png>
+ [24]
+File: figures/APIFox_NormalGet.png Graphic file (type bmp)
+<figures/APIFox_NormalGet.png>
+File: figures/liso_test.png Graphic file (type bmp)
+<figures/liso_test.png>
+File: figures/lab2Logger.png Graphic file (type bmp)
+<figures/lab2Logger.png>
+ [25]
+File: figures/BUF=1.png Graphic file (type bmp)
+<figures/BUF=1.png>
+File: figures/lab4_handmade.png Graphic file (type bmp)
+<figures/lab4_handmade.png>
+ [26]) (./chapters/chapter6.tex [27] [28]
 第六章
 ) (./appendix/acknowledgements.tex
 
@@ -1288,7 +1319,7 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                \hskip 12.0pt
 (hyperref)                replaced by space on input line 15.
 
-[23
+[29
 
 ]
 File: figures/ab5000_1000.png Graphic file (type bmp)
@@ -1319,7 +1350,7 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 71.
 Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 71.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 71.
 Package rerunfilecheck Info: File `tjumain.out' has not changed.
-(rerunfilecheck)             Checksum: 41F35FDB850779F69B94D4B7DC1686BA;6584.
+(rerunfilecheck)             Checksum: 882D6C00B9D20BA7D41E3B3381AA10B2;7724.
 
 
 LaTeX Font Warning: Size substitutions with differences
@@ -1328,12 +1359,12 @@ LaTeX Font Warning: Size substitutions with differences
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 71.
  ) 
 Here is how much of TeX's memory you used:
- 24025 strings out of 481301
- 471302 string characters out of 5924271
- 943886 words of memory out of 5000000
- 40566 multiletter control sequences out of 15000+600000
+ 24164 strings out of 481301
+ 474250 string characters out of 5924271
+ 945994 words of memory out of 5000000
+ 40693 multiletter control sequences out of 15000+600000
  616748 words of font info for 242 fonts, out of 8000000 for 9000
  286 hyphenation exceptions out of 8191
  59i,12n,81p,975b,1799s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on tjumain.pdf (27 pages).
+Output written on tjumain.pdf (34 pages).

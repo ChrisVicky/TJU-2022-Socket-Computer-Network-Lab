@@ -11,42 +11,50 @@
 \contentsline {section}{\numberline {2.3}第三周：实现 HTTP 并发请求}{2}{section*.7}%
 \contentsline {section}{\numberline {2.4}第四周：实现多个客户端的并发处理}{3}{section*.8}%
 \contentsline {section}{\numberline {2.5}选做：CGI}{3}{section*.9}%
-\contentsline {chapter}{\numberline {第三章\hspace {.3em}}协议设计}{4}{section*.10}%
-\contentsline {section}{\numberline {3.1}总体设计}{4}{section*.11}%
-\contentsline {subsection}{\numberline {3.1.1}基础代码源文件架构分析}{4}{section*.12}%
-\contentsline {section}{\numberline {3.2}数据结构设计}{4}{section*.17}%
-\contentsline {section}{\numberline {3.3}协议规则设计}{5}{section*.22}%
-\contentsline {subsection}{\numberline {3.3.1}使用 socket 进行网络通信的流程}{6}{section*.23}%
-\contentsline {subsection}{\numberline {3.3.2}消息解析方法}{7}{section*.25}%
-\contentsline {subsection}{\numberline {3.3.3}动态数组设计}{9}{section*.27}%
-\contentsline {subsection}{\numberline {3.3.4}请求报文与响应报文协议设计}{9}{section*.28}%
-\contentsline {subsection}{\numberline {3.3.5}流水线设计}{10}{section*.30}%
-\contentsline {subsection}{\numberline {3.3.6}多客户端并发处理协议}{11}{section*.31}%
-\contentsline {subsection}{\numberline {3.3.7}CGI 协议}{11}{section*.33}%
-\contentsline {chapter}{\numberline {第四章\hspace {.3em}}协议实现}{12}{section*.34}%
-\contentsline {section}{\numberline {4.1}第一周——实现简单的 echo web server}{12}{section*.35}%
-\contentsline {subsection}{\numberline {4.1.1}消息解析}{12}{section*.36}%
-\contentsline {subsection}{\numberline {4.1.2}消息反馈}{12}{section*.39}%
-\contentsline {section}{\numberline {4.2}第二周——实现 HEAD、GET、POST 方法}{14}{section*.40}%
-\contentsline {subsection}{\numberline {4.2.1}方法实现}{14}{section*.41}%
-\contentsline {subsubsection}{\numberline {4.2.1.1}错误码}{14}{section*.42}%
-\contentsline {subsubsection}{\numberline {4.2.1.2}基本方法}{15}{section*.43}%
-\contentsline {subsection}{\numberline {4.2.2}妥善管理缓冲区}{16}{section*.47}%
-\contentsline {subsubsection}{\numberline {4.2.2.1}动态数组定义与实现}{16}{section*.48}%
-\contentsline {subsubsection}{\numberline {4.2.2.2}动态数组使用}{16}{section*.49}%
-\contentsline {subsection}{\numberline {4.2.3}日志记录模块实现}{17}{section*.57}%
-\contentsline {subsection}{\numberline {4.2.4}读写磁盘文件错误处理}{17}{section*.58}%
-\contentsline {section}{\numberline {4.3}第三周——实现HTTP的并发请求}{17}{section*.59}%
-\contentsline {section}{\numberline {4.4}第四周——实现多个客户端的并发处理}{19}{section*.61}%
-\contentsline {section}{\numberline {4.5}选做——CGI}{20}{section*.62}%
-\contentsline {chapter}{\numberline {第五章\hspace {.3em}}实验结果及分析}{22}{section*.67}%
-\contentsline {section}{\numberline {5.1}第一周——实现简单的 echo web server}{22}{section*.68}%
-\contentsline {section}{\numberline {5.2}第二周——实现 HEAD、GET、POST 方法}{22}{section*.69}%
-\contentsline {section}{\numberline {5.3}第三周——实现HTTP的并发请求}{22}{section*.70}%
-\contentsline {section}{\numberline {5.4}第四周——实现多个客户端的并发处理}{22}{section*.71}%
-\contentsline {section}{\numberline {5.5}选做——CGI}{22}{section*.72}%
-\contentsline {chapter}{\numberline {第六章\hspace {.3em}}个人总结}{23}{section*.74}%
+\contentsline {chapter}{\numberline {第三章\hspace {.3em}}协议设计}{4}{section*.11}%
+\contentsline {section}{\numberline {3.1}总体设计}{4}{section*.12}%
+\contentsline {subsection}{\numberline {3.1.1}基础代码源文件架构分析}{4}{section*.13}%
+\contentsline {section}{\numberline {3.2}数据结构设计}{4}{section*.18}%
+\contentsline {section}{\numberline {3.3}协议规则设计}{5}{section*.23}%
+\contentsline {subsection}{\numberline {3.3.1}使用 socket 进行网络通信的流程}{6}{section*.24}%
+\contentsline {subsection}{\numberline {3.3.2}消息解析方法}{7}{section*.26}%
+\contentsline {subsection}{\numberline {3.3.3}动态数组设计}{9}{section*.28}%
+\contentsline {subsection}{\numberline {3.3.4}请求报文与响应报文协议设计}{9}{section*.29}%
+\contentsline {subsection}{\numberline {3.3.5}流水线设计}{10}{section*.31}%
+\contentsline {subsection}{\numberline {3.3.6}多客户端并发处理协议}{11}{section*.32}%
+\contentsline {subsection}{\numberline {3.3.7}CGI 协议}{11}{section*.34}%
+\contentsline {chapter}{\numberline {第四章\hspace {.3em}}协议实现}{12}{section*.35}%
+\contentsline {section}{\numberline {4.1}第一周——实现简单的 echo web server}{12}{section*.36}%
+\contentsline {subsection}{\numberline {4.1.1}消息解析}{12}{section*.37}%
+\contentsline {subsection}{\numberline {4.1.2}消息反馈}{12}{section*.40}%
+\contentsline {section}{\numberline {4.2}第二周——实现 HEAD、GET、POST 方法}{14}{section*.41}%
+\contentsline {subsection}{\numberline {4.2.1}方法实现}{14}{section*.42}%
+\contentsline {subsubsection}{\numberline {4.2.1.1}错误码}{14}{section*.43}%
+\contentsline {subsubsection}{\numberline {4.2.1.2}基本方法}{15}{section*.44}%
+\contentsline {subsection}{\numberline {4.2.2}妥善管理缓冲区}{16}{section*.48}%
+\contentsline {subsubsection}{\numberline {4.2.2.1}动态数组定义与实现}{16}{section*.49}%
+\contentsline {subsubsection}{\numberline {4.2.2.2}动态数组使用}{16}{section*.50}%
+\contentsline {subsection}{\numberline {4.2.3}日志记录模块实现}{17}{section*.58}%
+\contentsline {subsection}{\numberline {4.2.4}读写磁盘文件错误处理}{17}{section*.59}%
+\contentsline {section}{\numberline {4.3}第三周——实现HTTP的并发请求}{17}{section*.60}%
+\contentsline {section}{\numberline {4.4}第四周——实现多个客户端的并发处理}{19}{section*.62}%
+\contentsline {section}{\numberline {4.5}选做——CGI}{20}{section*.63}%
+\contentsline {chapter}{\numberline {第五章\hspace {.3em}}实验结果及分析}{22}{section*.69}%
+\contentsline {section}{\numberline {5.1}Auto Lab 测试合集}{22}{section*.70}%
+\contentsline {section}{\numberline {5.2}第一周——实现简单的 echo web server}{22}{section*.76}%
+\contentsline {subsection}{\numberline {5.2.1}对消息的正确解析}{22}{section*.77}%
+\contentsline {subsection}{\numberline {5.2.2}echo web server}{22}{section*.78}%
+\contentsline {section}{\numberline {5.3}第二周——实现 HEAD、GET、POST 方法}{24}{section*.82}%
+\contentsline {subsection}{\numberline {5.3.1}结果分析}{24}{section*.84}%
+\contentsline {subsection}{\numberline {5.3.2}日志}{25}{section*.85}%
+\contentsline {section}{\numberline {5.4}第三周——实现HTTP的并发请求}{25}{section*.90}%
+\contentsline {subsection}{\numberline {5.4.1}pipelining 测试}{25}{section*.91}%
+\contentsline {section}{\numberline {5.5}第四周——实现多个客户端的并发处理}{26}{section*.93}%
+\contentsline {subsection}{\numberline {5.5.1}手工测试}{26}{section*.94}%
+\contentsline {subsection}{\numberline {5.5.2}Apache 测试}{26}{section*.96}%
+\contentsline {section}{\numberline {5.6}选做——CGI}{27}{section*.99}%
+\contentsline {chapter}{\numberline {第六章\hspace {.3em}}个人总结}{29}{section*.100}%
 \ttl@change@i {\@ne }{chapter}{2em}{\vspace {.5\baselineskip }\xiaosan \song }{\prechaptername \CJKnumber {\thecontentslabel }\postchaptername \qquad }{}{}\relax 
 \ttl@change@v {chapter}{}{}{}\relax 
-\contentsline {chapter}{附\hskip 1em\relax 录}{23}{section*.75}%
+\contentsline {chapter}{附\hskip 1em\relax 录}{29}{section*.101}%
 \contentsfinish 

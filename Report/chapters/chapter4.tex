@@ -197,16 +197,26 @@ CGI 的实现将标志着我们的 Liso Server 走向成熟。能支持 CGI 程�
 
 \begin{figure}[htbp!]
     \centering
-    \subfigure[CGI 登陆接口文档]{\includegraphics[width=2.5in]{CGILogin.png}\label{fig:cgiLogin}}
-    \subfigure[CGI 注册文档]{\includegraphics[width=2.5in]{CGIRegister.png}\label{fig:cgiRegister}}
+    \subfigure[CGI 登陆接口文档]{\includegraphics[width=2in]{CGILogin.png}\label{fig:cgiLogin}}
+    \subfigure[CGI 注册接口文档]{\includegraphics[width=2in]{CGIRegister.png}\label{fig:cgiRegister}}
     \caption{CGI 程序接口文档} \label{fig:CGIPORT}
 \end{figure}
 
 
-\paragraph*{后端部分} 设计了后端数据库结构（如图\ref{fig:database} 所示）来存储用户信息，实现了两个 Python 程序，分别处理用户注册和登陆的事务。Python 程序中没有采用高级的编程架构，只采用了基本的编程逻辑：使用 pymysql 库对数据库进行连接，然后通过相应的接口对数据库进行操作。进行数据库操作前需要检查参数是不是空的，避免数据库错误。同时还需要检查有没有数据库注入攻击的情况。对于返回类，我们通过一个“字典”类型的数据结构封装需要传回的信息。对于前端来说，受到的信息就是 Json 格式，能够很方便地通过相关方法进行参数的调用和访问。
+\paragraph*{后端部分} 设计了后端数据库结构（如图\ref{fig:database} 所示）来存储用户信息，实现了两个 Python 程序，分别处理用户注册和登陆的事务。Python 程序中没有采用高级的编程架构，只采用了基本的编程逻辑：使用 pymysql 库对数据库进行连接，然后通过相应的接口对数据库进行操作。进行数据库操作前需要检查参数是不是空的，避免数据库错误。同时还需要检查有没有数据库注入攻击的情况。对于返回类，我们通过一个“字典”类型的数据结构封装需要传回的信息。对于前端来说，收到的信息就是 Json 格式，能够很方便地通过相关方法进行参数的调用和访问。
 
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=5.6in]{database.png}
     \caption{Database for CGI}\label{fig:database}
 \end{figure}
+
+\paragraph*{部署阶段} 程序部署，采用了 Docker 技术，使用端口映射的技术将 9999 端口进行映射，然后通过 DockerFile 规范每次部署的顺序。通过如图\ref{fig:Liso.sh}的 Liso.sh 的脚本便于每次更新。更新流程为：在本地编辑好后，向 gitee 仓库提交最新版本。在服务器上运行脚本：先进行 make clean，然后进行 git pull， 从仓库中收集新版本，然后进行 docker 进程的删除、docker 镜像的删除。最后进行新镜像的创建以及容器的运行。之所以需要重新创建镜像，是因为一、我们的更新可能会涉及一部分容器依赖的更新；二、 Docker 本身是有 Cache 的，如果和之前的镜像创建相同，则会使用 Cache 加速，并不会有太多的时间开销。
+
+\begin{figure}[htbp!]
+    \begin{center}
+        \includegraphics[width=4.5in]{liso.sh.png}
+        \caption{Liso.sh}\label{fig:Liso.sh}
+    \end{center}
+\end{figure}
+
