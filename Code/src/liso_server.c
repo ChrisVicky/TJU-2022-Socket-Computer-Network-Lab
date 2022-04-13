@@ -176,8 +176,8 @@ int main(int argc, char* argv[])
 		PRINTHEAD(ECHO_PORT, _cnt, _tot);
 		int cnt, fd;
 		if((cnt = select(MAX_FD_SIZE+1, &tmp_fds, NULL, NULL, NULL)) < 1){
-			ERRORLOG("Select < 1, No Clients");
-			continue;
+			ERRORLOG("Select < 1, No Clients\n");
+//			continue;
 			return EXIT_FAILURE;
 		}
 		for(fd = 0; fd< MAX_FD_SIZE;fd++){

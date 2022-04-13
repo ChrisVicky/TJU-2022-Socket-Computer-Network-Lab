@@ -5,7 +5,7 @@
 \section{总体设计}
 
 \subsection{基础代码源文件架构分析}
-首先我们通过 tree 命令获得如图
+首先我们通过 tree 命令获得如图\ref{fig:structure}并绘制了项目结构的思维导图。
 
 \begin{figure}[htbp!]
   \centering
@@ -106,7 +106,7 @@ request_line: token t_sp text t_sp text t_crlf {
 };
 \end{lstlisting}
 
-值的注意的是，yacc 支持一种递归定义的语法，让我们完成对多请求头语法的递归定义。如下代码即是示例。可以看到，1\-11 行定义了基本的 request\_header，13行则循环定义了多条 request\_header 的语法。
+值的注意的是，yacc 支持一种递归定义的语法，让我们完成对多请求头语法的递归定义。如下代码即是示例。可以看到，1-12 行定义了基本的 request\_header，13行则循环定义了多条 request\_header 的语法。
 
 \begin{lstlisting}[language=c, name=parser.y Example of Recursive Definition]
 request_header: token ows t_colon ows text ows t_crlf {
@@ -140,7 +140,7 @@ request_header: request_header request_header ;
   \caption{GET 请求测试}\label{fig:liso_client_get_test}
 \end{figure}
 
-第一行是的状态， "HTTP/1.1 200 OK"，代表服务器的版本为 HTTP 1.1，状态码 200，状态信息 OK。对于服务器而言，只需在能够正确返回时将这些信息按顺序填入缓冲需即可。然后我们可以看到之后有 6 行键值对信息，即 \{"Date", "Server", "Last-Modified", "Content-Length", "Content-Type", "Connection"\}，代表了\{"该请求的日期","服务器名称","最后编辑时间","Body 部分的长度","Body 部分数据的类型","连接状态"\}。且通过 Postman 的测试，我们发现有些键值对并不是必须的，且顺序并不影响客户端的到正确的响应信息。当然，作为例子，我们将详细讲解这六个部分是如何得到并加入到响应报文中的。
+第一行是的状态， "HTTP/1.1 200 OK"，代表服务器的版本为 HTTP 1.1，状态码 200，状态信息 OK。对于服务器而言，只需在能够正确返回时将这些信息按顺序填入缓冲区即可。然后我们可以看到之后有 6 行键值对信息，即 \{"Date", "Server", "Last-Modified", "Content-Length", "Content-Type", "Connection"\}，代表了\{"该请求的日期","服务器名称","最后编辑时间","Body 部分的长度","Body 部分数据的类型","连接状态"\}。同时，通过 Postman（一种后端即口测试工具，能够发送 HTTP 报文） 的测试，我们发现有些键值对并不是必须的，且顺序并不影响客户端收到正确的响应信息。当然，作为例子，我们将详细讲解这六个部分是如何得到并加入到响应报文中的。
 
 \begin{itemize}
   \item \textbf{Date: } 通过 C 函数 time()，localtime() 以及 strftime() 将当前时间转化成一个字符串，然后通过统一函数调用 set\_header() 函数添加到响应报文的 headers 部分；
@@ -158,7 +158,7 @@ request_header: request_header request_header ;
 
 解析出一个报文后，我们通过自己实现的动态数组工具创建一个新的动态数组 newbuffer，然后通过函数 append\_dynamic\_buffer()，将报文加入到 newbuffer 中，然后通过设置 access\_end 记录当前报文在整个 pipelining 的位置。为什么要设计这个 access\_end 呢，因为在之后 cgi 中，可能会在 body 部分传输参数，然而这个 body 部分的内容会被 "\textbackslash r\textbackslash n\textbackslash r\textbackslash n" 拆分到下一条报文的开头，并不会添加到 newbuffer 中，也就是说我们只有在处理完一条报文之后才能确定该条报文的真实长度。为了统一性，我们才定义了这个 access\_end 结构体变量表示当前报文的结束位置。在完成该报文的所有工作之后，我们需要释放新创建的动态数组，并更新用来存放 pipelining 报文流的动态数组：通过函数 update\_dynamic\_buffer() 将 access\_end 前面的部分全部去掉。
 
-这里需要注意的是，如果 body 部分被接收完全就开始对该报文进行处理时，我们需要正确返回，并回退到拆分报文之前的位置，待下一次接收后再处理该报文。
+这里需要注意的是，如果 body 部分未被接收完全，我们就开始对该报文进行处理时，我们需要正确返回，并回退到拆分报文之前的位置，待下一次接收后再处理该报文。
 
 
 \subsection{多客户端并发处理协议}
@@ -173,7 +173,7 @@ request_header: request_header request_header ;
 
 应该指出，我们通过 select() 函数，会得到一个用户池 fd\_set，之后只需要遍历该池的所有位置即可。需要注意的是，我们需要为每个用户预先开辟一个空的缓冲区，即 1024 个 dynamic\_buffer，来存放各自的数据。同时还需要维护每个用户的地址信息等。
 
-\subsection{CGI 协议}
+\subsection{CGI 协议}\label{sec:CGI}
 
 CGI 全称为 Common Gateway Interface，是实现服务器功能扩展的重要端口。其原理是：通过解析用户请求的 uri 是否含有 cgi 关键字，判断是否为 cgi 请求；如果是，则调用相应的 cgi 程序为其服务，否则按照正常情况处理。
 

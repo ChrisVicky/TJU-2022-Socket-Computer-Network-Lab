@@ -10,7 +10,7 @@
 
 \begin{figure}[htbp!]
     \centering
-    \includegraphics[width=4.5in]{segmentFault.png}
+    \includegraphics[width=5in]{segmentFault.png}
     \caption{Segment Fault}\label{fig:segmentfault}
     \vspace{-1em}
 \end{figure}
@@ -25,7 +25,7 @@
 
 \begin{figure}[htbp!]
     \centering
-    \includegraphics[width=4.5in]{make_test_example.png}
+    \includegraphics[width=5in]{make_test_example.png}
     \caption{Example Test}\label{fig:maketestexample}
     \vspace{-1em}
 \end{figure}
@@ -99,8 +99,8 @@ def deal_with_request(buf):
 
 \begin{figure}[htbp!]
     \centering
-    \subfigure[Response.c 和 Response.h]{\label{fig:Responsech}\includegraphics[width=5in]{responsech.png}}
-    \subfigure[liso\_server.c 和 liso\_client.c]{\label{fig:liso}\includegraphics[width=5in]{liso.png}}
+    \subfigure[Response.c 和 Response.h]{\label{fig:Responsech}\includegraphics[width=4.6in]{responsech.png}}
+    \subfigure[liso\_server.c 和 liso\_client.c]{\label{fig:liso}\includegraphics[width=4.6in]{liso.png}}
     \caption{核心代码}\label{fig:Main}
 \end{figure}
 
@@ -141,7 +141,6 @@ def deal_with_request(buf):
     \subfigure[日志文件]{\label{fig:log}\includegraphics[width=3.3in]{log.png}}
     \caption{动态数组、日志文件以及 Handle Head 函数}\label{fig:Chapter2}
 \end{figure}
-
 
 \subsubsection*{验证}
 如图\ref{fig:buffer}，即使将缓冲区大小设置为 1，我们的 server 依旧正常处理并返回信息（测试样例为 pipeline，由于和 Persistent Connection 相关联，故一起实现了）。
@@ -191,14 +190,18 @@ def deal_with_request(buf):
 CGI 的实现将标志着我们的 Liso Server 走向成熟。能支持 CGI 程序的调用，标志着 Liso Server 拥有无穷的扩展性，不仅能够完成基本的报文解析、GET 消息的回传，还能支持多种应用。在我们的设计中，我们采用了前后端分离的思想，将 CGI 程序设计为后端应用，提供给在服务器端实现的 CGI 接口调用，为前端的请求服务。
 
 具体而言，我们通过在第三部分介绍的数据结构 kv.[c|h] 来方便地对环境变量以及参数进行设置与传递。借鉴 cgi 文件夹中的例子，我们完成了全栈的开发。
+
+CGI 程序的流程在第三章的\ref{sec:CGI}节有所介绍，其中值得注意的是， POST 方法传递参数的方式是通过 body 部分进行传递，而 GET 方法则是在 URI 上进行。且二者对参数都是通过键值对的形式进行标记，结构一致，有助于模块化编程。
+
+
 \paragraph*{前端部分} 我们设计了 HTML 网页来与客户交互。通过修改 index.html 的代码，用“表单”将我们的 POST 和 GET 请求方法的页面入口放进去并实现跳转。在实际的测试页面，我们通过 JavaScript 的 "XMLHttpRequest()" 方法向我们的服务器发送 cgi 请求，并通过 document 方法对页面的信息进行动态的修改。
 
 \paragraph*{接口部分} 后端设计的接口为两个，一个 "/cgi/register.py" 另一个为 "/cgi/login.py" 接口文档如图\ref{fig:CGIPORT} 所示。
 
 \begin{figure}[htbp!]
     \centering
-    \subfigure[CGI 登陆接口文档]{\includegraphics[width=2in]{CGILogin.png}\label{fig:cgiLogin}}
-    \subfigure[CGI 注册接口文档]{\includegraphics[width=2in]{CGIRegister.png}\label{fig:cgiRegister}}
+    \subfigure[CGI 登陆接口文档]{\includegraphics[width=2.6in]{CGILogin.png}\label{fig:cgiLogin}}
+    \subfigure[CGI 注册接口文档]{\includegraphics[width=2.6in]{CGIRegister.png}\label{fig:cgiRegister}}
     \caption{CGI 程序接口文档} \label{fig:CGIPORT}
 \end{figure}
 
@@ -207,7 +210,7 @@ CGI 的实现将标志着我们的 Liso Server 走向成熟。能支持 CGI 程�
 
 \begin{figure}[htbp!]
     \centering
-    \includegraphics[width=5.6in]{database.png}
+    \includegraphics[width=5.6in]{db.png}
     \caption{Database for CGI}\label{fig:database}
 \end{figure}
 
@@ -215,8 +218,17 @@ CGI 的实现将标志着我们的 Liso Server 走向成熟。能支持 CGI 程�
 
 \begin{figure}[htbp!]
     \begin{center}
-        \includegraphics[width=4.5in]{liso.sh.png}
+        \includegraphics[width=5.5in]{liso.sh.png}
         \caption{Liso.sh}\label{fig:Liso.sh}
+    \end{center}
+\end{figure}
+
+
+
+\begin{figure}[htbp!]
+    \begin{center}
+        \includegraphics[width=5.5in]{liso_laptop_main.png}
+        \caption{页面效果}\label{fig:lap}
     \end{center}
 \end{figure}
 
