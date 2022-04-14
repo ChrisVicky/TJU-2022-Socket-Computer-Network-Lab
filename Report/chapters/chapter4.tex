@@ -23,12 +23,6 @@
 
 当然，还可以在 example.c 中处理一下返回错误的情况，避免直接访问 NULL 的空间导致 Segment Fault。使用批量脚本测试则效果如图\ref{fig:maketestexample}。
 
-\begin{figure}[htbp!]
-    \centering
-    \includegraphics[width=5in]{make_test_example.png}
-    \caption{Example Test}\label{fig:maketestexample}
-    \vspace{-1em}
-\end{figure}
 
 \subsection{消息反馈}
 
@@ -99,8 +93,8 @@ def deal_with_request(buf):
 
 \begin{figure}[htbp!]
     \centering
-    \subfigure[Response.c 和 Response.h]{\label{fig:Responsech}\includegraphics[width=4.6in]{responsech.png}}
-    \subfigure[liso\_server.c 和 liso\_client.c]{\label{fig:liso}\includegraphics[width=4.6in]{liso.png}}
+    \subfigure[Response.c 和 Response.h]{\label{fig:Responsech}\includegraphics[width=5.5in]{responsech.png}}
+    \subfigure[liso\_server.c 和 liso\_client.c]{\label{fig:liso}\includegraphics[width=5.5in]{liso.png}}
     \caption{核心代码}\label{fig:Main}
 \end{figure}
 
@@ -169,7 +163,7 @@ def deal_with_request(buf):
 
 \begin{figure}[htbp!]
     \centering
-    \includegraphics[width=5.6in]{liso_server_pipelining.png}
+    \includegraphics[width=5in]{liso_server_pipelining.png}
     \caption{Liso Server Pipelining}\label{fig:liso_server_pipelining}
 \end{figure}
 

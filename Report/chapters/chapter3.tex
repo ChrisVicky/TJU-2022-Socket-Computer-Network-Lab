@@ -175,9 +175,9 @@ request_header: request_header request_header ;
 
 \subsection{CGI 协议}\label{sec:CGI}
 
-CGI 全称为 Common Gateway Interface，是实现服务器功能扩展的重要端口。其原理是：通过解析用户请求的 uri 是否含有 cgi 关键字，判断是否为 cgi 请求；如果是，则调用相应的 cgi 程序为其服务，否则按照正常情况处理。
+CGI 全称为 Common Gateway Interface，是实现服务器功能扩展的重要接口。其原理是：通过解析用户请求的 uri 是否含有 cgi 关键字，判断是否为 cgi 请求；如果是，则调用相应的 cgi 程序为其服务，否则按照正常情况处理。
 
-根据实验指导书的意见，我们实现了如图的用户注册、登陆接口。在后端程序的编写中，我们采用了有良好跨平台性的 Python 以及 MySQL 数据库对用户信息进行存储，以便日后扩展时可以有良好的扩展接口。
+根据实验指导书的意见，我们实现了如图\ref{fig:3mains} 的用户注册、登陆接口。在后端程序的编写中，我们采用了有良好跨平台性的 Python 以及 MySQL 数据库对用户信息进行存储，以便日后扩展时可以有良好的扩展接口。
 
 
 CGI 实现的一般流程如下：
@@ -190,3 +190,4 @@ CGI 实现的一般流程如下：
   \item 执行请求执行的 CGI 脚本（或程序），并将输出数据贴在返回报文的 Body 部分；
   \item 按照正常的报文进行返回。
 \end{enumerate}
+

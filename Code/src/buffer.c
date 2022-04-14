@@ -10,6 +10,12 @@
 //#define DEBUG
 
 #include "buffer.h"
+
+/**
+ * @brief Initalize dynamic_buffer
+ *
+ * @param db
+ */
 void init_dynamic_buffer(dynamic_buffer * db){
 	db->buf = (char *) malloc(DEFAULT_CAPACITY*sizeof(char*));
 	db->capacity = DEFAULT_CAPACITY;
@@ -18,10 +24,21 @@ void init_dynamic_buffer(dynamic_buffer * db){
 	memset(db->buf, 0, DEFAULT_CAPACITY*sizeof(char));
 }
 
+/**
+ * @brief Memset, set current to 0
+ *
+ * @param db
+ */
 void memset_dynamic_buffer(dynamic_buffer * db){
 	memset(db->buf, 0, db->capacity);
 	db->current = 0;
 }
+
+/**
+ * @brief Free buffer spaces only
+ *
+ * @param db
+ */
 void free_buffer_dynamic_buffer(dynamic_buffer *db){
 	if(db==NULL){
 		ERROR("Not exists!\n");
@@ -33,6 +50,12 @@ void free_buffer_dynamic_buffer(dynamic_buffer *db){
 	}
 	free(db->buf);
 }
+
+/**
+ * @brief Free dynamic_buffer, including db itself
+ *
+ * @param db
+ */
 void free_dynamic_buffer(dynamic_buffer * db){
 
 #ifdef DEBUG
@@ -54,6 +77,14 @@ void free_dynamic_buffer(dynamic_buffer * db){
 	db = NULL;
 }
 
+/**
+ * @brief Append buf to the end of Db->buf, use memcpy, 
+ * 		Not that len may be bigger than strlen(buf) because bit string may be appended.
+ *
+ * @param db
+ * @param buf
+ * @param len
+ */
 void append_dynamic_buffer(dynamic_buffer * db, char * buf, size_t len){
 //	PRINT4("GGGGGGGG\n");
 //	PRINT4("Cureent Len: %ld vs %ld, buf: %s\n" ,db->capacity,db->current+len,buf);
@@ -66,6 +97,12 @@ void append_dynamic_buffer(dynamic_buffer * db, char * buf, size_t len){
 //	LOG("End Append\n");
 }
 
+/**
+ * @brief Test spaces and realloc if necessary
+ *
+ * @param db
+ * @param len
+ */
 void add_dynamic_buffer(dynamic_buffer *db, size_t len){
 	if(db->current + len > db->capacity){
 		int req_len = db->current + len;
@@ -78,6 +115,11 @@ void add_dynamic_buffer(dynamic_buffer *db, size_t len){
 	}
 }
 
+/**
+ * @brief for Debug
+ *
+ * @param db
+ */
 void print_dynamic_buffer(dynamic_buffer *db){
 	if(db==NULL){
 		ERROR("DB NULL\n");
@@ -92,6 +134,11 @@ void print_dynamic_buffer(dynamic_buffer *db){
 	helper(30, '-');printf("\n");
 }
 
+/**
+ * @brief not useful... just init db 
+ *
+ * @param db
+ */
 void reset_dynamic_buffer(dynamic_buffer *db){
 	//free_buffer_dynamic_buffer(db);
 	init_dynamic_buffer(db);
@@ -123,7 +170,7 @@ void update_dynamic_buffer(dynamic_buffer *db){
 }
 
 /**
- * @brief From L to R, Copy msg
+ * @brief From L to R, Copy msg from src to dest	: Should use Memcpy!!!
  *
  * @param dest
  * @param src
@@ -132,5 +179,6 @@ void update_dynamic_buffer(dynamic_buffer *db){
  */
 void catpart_dynamic_buffer(dynamic_buffer *dest, dynamic_buffer *src, int l, int len){
 	add_dynamic_buffer(dest, len);
-	strncpy(dest->buf, src->buf+l, len);
+//	strncpy(dest->buf, src->buf+l, len);
+	memcpy(dest->buf, src->buf+l, len);
 }

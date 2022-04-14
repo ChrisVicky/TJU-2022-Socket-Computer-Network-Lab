@@ -40,7 +40,7 @@ int current_clinet_fd = 0;
  * 	2. Check Connection Close
  * 	3. Check Http Version --> 505
  * 	4. Methods Error --> 501
- * 	5. CGI ? Static Path,
+ * 	5. CGI ? Handle CGI : Static Path; 
  *
  */
 int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, dynamic_buffer *odbuf){
@@ -147,7 +147,7 @@ int handle_request(int client_sock, int sock, dynamic_buffer *dbuf, struct socka
 } 
 
 /**
- * @brief 	: handle get requests
+ * @brief 			: handle get requests
  *
  * @param request		: requests details
  * @param dbuf			: buffer for returned msgs
@@ -297,6 +297,15 @@ int handle_head(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_a
 	return PERSISTENT;
 }
 
+/**
+ * @brief 		Echo back
+ *
+ * @param request
+ * @param dbuf
+ * @param cli_addr
+ * @param return_value
+ * @param odbuf
+ */
 void handle_post(Request *request, dynamic_buffer *dbuf, struct sockaddr_in cli_addr, int return_value, dynamic_buffer *odbuf){
 	/**
 	 * 1. Check uri
@@ -454,7 +463,18 @@ void get_last_modified(struct stat file_buffer, char * last_modified, size_t buf
 	strftime(last_modified, buf_size, "%a, %d %b %Y %H:%M:%S %Z",t);
 }
 
-// Get Type
+// Get Type 
+
+/**
+ * @brief 	: Get File Type ( c string )
+ *		
+ * @param path	: File Path
+ *
+ * @return 	: File type ( NOT Complete -->  )
+ * 		
+ * @TODO	
+ * 		: json, text, etc
+ */
 char* get_file_type(char * path){
 	char *result = (char*)malloc(sizeof(char*)*100);
 	size_t len = strlen(path);
@@ -544,6 +564,18 @@ int get_file_content(dynamic_buffer * dfbuf, char*path, char *file_type){
 	}
 }
 
+/**
+ * @brief 		: GET Picture --> Binary is Special
+ * 			: !! NOT USED
+ *
+ * @param dfbuf		: dynamic_buffer, for containing file content.
+ * @param path		: Path of the file (relative, under and include ./static_site)
+ * @param file_type	: file_type --> Not important;
+ *
+ * @return 
+ * 			: 0 -> OK
+ * 			: 1 -> WRONG
+ */
 int get_pic_content(dynamic_buffer *dfbuf, char *path, char *file_type){
 	LOG("FILE AS A PIC\n");
 	FILE *fp = fopen(path, "rb");
@@ -572,6 +604,15 @@ int get_pic_content(dynamic_buffer *dfbuf, char *path, char *file_type){
 	return 0;
 }
 
+/**
+ * @brief 		: GET file content --> with mmap, uniform
+ *
+ * @param dfbuf		: Default
+ * @param path		: Default
+ * @param file_type	: Default
+ *
+ * @return		: Default 
+ */
 int get_normal_content(dynamic_buffer *dfbuf, char*path, char *file_type){
 	int fd_in=0;
 	if((fd_in=open(path, O_RDONLY))<0){
@@ -730,6 +771,14 @@ char *get_query_string(char *uri){
 		return NULL;
 	return t+1;
 }
+
+/**
+ * @brief 		: Set Envp for arg in CGI 
+ *
+ * @param arg
+ * @param request
+ * @param cli_addr
+ */
 void set_EVNP(CGI_ARG* arg, Request* request, struct sockaddr_in cli_addr){
 	append_KV(arg, "CONTENT_LENGTH", get_header_value(request, "Content-Length"));
 

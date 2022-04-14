@@ -1,6 +1,13 @@
 #include "kv.h"
 
 
+/**
+ * @brief Add key: value to arg using sprintf
+ *
+ * @param arg
+ * @param key
+ * @param value
+ */
 void append_KV(CGI_ARG* arg, char* key, char *value){
 	if(value==NULL){
 		return;
