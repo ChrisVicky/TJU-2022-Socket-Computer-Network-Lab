@@ -9,9 +9,9 @@ TIME SCHEDULE：
 | TIME  | LAB                        | 完成进度     |
 |-------|----------------------------|--------------|
 | Week1 | 实现简单的 Echo Web Server | $\checkmark$ |
-| Week2 | 实现 HEAD, GET and POST    |              |
-| Week3 | 实现 HTTP 的并发请求       |              |
-| Week4 | 实现多个客户端的并发处理   |              |
-| 选做  | CGI                        |              |
+| Week2 | 实现 HEAD, GET and POST    |   $\checkmark$           |
+| Week3 | 实现 HTTP 的并发请求       |      $\checkmark$        |
+| Week4 | 实现多个客户端的并发处理   |       $\checkmark$       |
+| 选做  | CGI                        |        $\checkmark$      |
 
 
